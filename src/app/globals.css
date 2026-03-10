@@ -1,26 +1,90 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/*
+ * CSS vars são injetados no :root pelo ThemeProvider via <style> tag.
+ * O default.ts é a única fonte de verdade para os valores do tema.
+ * Aqui apenas: registros para o Tailwind (@theme inline), dark mode e estilos globais.
+ */
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Brand */
+  --color-primary: var(--color-primary);
+  --color-secondary: var(--color-secondary);
+
+  /* Background */
+  --color-background: var(--color-background);
+  --color-background-secondary: var(--color-background-secondary);
+
+  /* Foreground */
+  --color-foreground: var(--color-foreground);
+  --color-foreground-secondary: var(--color-foreground-secondary);
+
+  /* Text */
+  --color-text-main: var(--color-text-main);
+  --color-text-secondary: var(--color-text-secondary);
+
+  /* Border */
+  --color-border: var(--color-border);
+  --color-ring: var(--color-ring);
+
+  /* Status */
+  --color-warning: var(--color-warning);
+  --color-info: var(--color-info);
+  --color-error: var(--color-error);
+  --color-success: var(--color-success);
+  --color-destructive: var(--color-destructive);
+  --color-destructive-foreground: var(--color-destructive-foreground);
+
+  /* Commons */
+  --color-muted: var(--color-muted);
+  --color-muted-foreground: var(--color-muted-foreground);
+  --color-accent: var(--color-accent);
+  --color-white: var(--color-white);
+  --color-black: var(--color-black);
+
+  /* Typography — Family */
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --font-heading: var(--font-heading);
+
+  /* Typography — Size */
+  --font-size-xs: var(--font-size-xs);
+  --font-size-sm: var(--font-size-sm);
+  --font-size-base: var(--font-size-base);
+  --font-size-lg: var(--font-size-lg);
+  --font-size-xl: var(--font-size-xl);
+  --font-size-2xl: var(--font-size-2xl);
+  --font-size-3xl: var(--font-size-3xl);
+
+  /* Typography — Weight */
+  --font-weight-normal: var(--font-weight-normal);
+  --font-weight-medium: var(--font-weight-medium);
+  --font-weight-semibold: var(--font-weight-semibold);
+  --font-weight-bold: var(--font-weight-bold);
+
+  /* Typography — Line Height */
+  --line-height-tight: var(--line-height-tight);
+  --line-height-normal: var(--line-height-normal);
+  --line-height-relaxed: var(--line-height-relaxed);
 }
 
+/* Dark mode — sobrescreve apenas as vars que mudam no dark */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --color-background: #0a0a0a;
+    --color-background-secondary: #1e293b;
+    --color-foreground: #f8fafc;
+    --color-foreground-secondary: #94a3b8;
+    --color-text-main: #f8fafc;
+    --color-text-secondary: #94a3b8;
+    --color-border: #334155;
+    --color-muted: #1e293b;
+    --color-muted-foreground: #94a3b8;
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
 }

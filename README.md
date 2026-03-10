@@ -1,36 +1,79 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Saitama
 
-## Getting Started
+Estrutura base para projetos Next.js com Supabase, design system e sistema de temas.
 
-First, run the development server:
+## Estrutura do Projeto
+
+```
+saitama/
+├── src/
+│   ├── app/              # Next.js App Router
+│   ├── core/              # Regras de negócio e abstrações (SOLID)
+│   │   ├── contracts/     # Interfaces
+│   │   └── domain/        # Tipos e entidades
+│   ├── shared/            # Hooks, utils, constantes
+│   ├── features/          # Features por domínio
+│   ├── providers/         # React Providers
+│   └── lib/supabase/      # Clientes Supabase (client, server, middleware)
+├── themes/                # Sistema de tema portátil
+├── design-system/         # Componentes base (Button, Input, Card, etc.)
+├── middleware.ts          # Refresh de sessão Supabase
+└── .env.example
+```
+
+## Setup
+
+1. **Instalar dependências**
+
+```bash
+npm install
+```
+
+2. **Configurar variáveis de ambiente**
+
+Copie `.env.example` para `.env.local` e preencha com suas credenciais Supabase:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+```
+
+As credenciais estão em: Supabase Dashboard > Project Settings > API.
+
+3. **Rodar em desenvolvimento**
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4. **Build para produção**
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build
+npm start
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Deploy na Vercel
 
-## Learn More
+1. Conecte o repositório à Vercel
+2. Adicione as variáveis de ambiente (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`)
+3. Deploy automático a cada push
 
-To learn more about Next.js, take a look at the following resources:
+## Rotas
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `/` - Página inicial
+- `/login` - Página de login
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Stack
 
-## Deploy on Vercel
+- Next.js 16 (App Router)
+- TypeScript
+- Tailwind CSS v4
+- Supabase (Auth, SSR)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Temas
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+O sistema de temas em `themes/` é portátil. Para customizar por cliente:
+
+1. Crie um novo preset em `themes/src/presets/`
+2. Passe `config={{ overrides: { ... } }}` no `ThemeProvider`

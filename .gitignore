@@ -2,6 +2,8 @@
 
 # dependencies
 /node_modules
+
+# yarn (não utilizado nesse projeto)
 /.pnp
 .pnp.*
 .yarn/*
@@ -9,6 +11,9 @@
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
+
+# npm (não utilizado nesse projeto)
+package-lock.json
 
 # testing
 /coverage
