@@ -4,7 +4,7 @@ export { Input } from './primitives/Input';
 export type { InputProps } from './primitives/Input';
 export { Checkbox } from './primitives/Checkbox';
 export type { CheckboxProps } from './primitives/Checkbox';
-export { Card } from './components/Card';
+export { Card, CardHeader, CardContent, CardFooter } from './components/Card';
 export type { CardProps, CardHeaderProps, CardContentProps, CardFooterProps } from './components/Card';
 export { Accordion } from './components/Accordion';
 export type { AccordionProps, AccordionItemProps } from './components/Accordion';

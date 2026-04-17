@@ -12,7 +12,13 @@ export default function Home() {
           href="/login"
           className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 font-medium text-white transition-opacity hover:opacity-90"
         >
-          Login
+          Entrar
+        </Link>
+        <Link
+          href="/register"
+          className="inline-flex items-center justify-center rounded-md border border-primary px-4 py-2 font-medium text-primary transition-opacity hover:opacity-90"
+        >
+          Criar conta
         </Link>
       </div>
     </main>

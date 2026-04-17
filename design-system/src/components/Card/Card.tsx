@@ -18,7 +18,7 @@ function CardRoot({ children, className = '', ...props }: CardProps) {
   );
 }
 
-function Header({ children, className = '' }: CardHeaderProps) {
+export function CardHeader({ children, className = '' }: CardHeaderProps) {
   return (
     <div className={['mb-4 text-lg font-semibold', className].filter(Boolean).join(' ')}>
       {children}
@@ -26,11 +26,11 @@ function Header({ children, className = '' }: CardHeaderProps) {
   );
 }
 
-function Content({ children, className = '' }: CardContentProps) {
+export function CardContent({ children, className = '' }: CardContentProps) {
   return <div className={className || undefined}>{children}</div>;
 }
 
-function Footer({ children, className = '' }: CardFooterProps) {
+export function CardFooter({ children, className = '' }: CardFooterProps) {
   return (
     <div className={['mt-4 flex justify-end gap-2', className].filter(Boolean).join(' ')}>
       {children}
@@ -38,4 +38,8 @@ function Footer({ children, className = '' }: CardFooterProps) {
   );
 }
 
-export const Card = Object.assign(CardRoot, { Header, Content, Footer });
+export const Card = Object.assign(CardRoot, {
+  Header: CardHeader,
+  Content: CardContent,
+  Footer: CardFooter,
+});

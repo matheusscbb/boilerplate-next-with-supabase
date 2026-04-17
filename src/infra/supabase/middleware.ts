@@ -1,10 +1,10 @@
 import { createServerClient } from '@supabase/ssr';
 import { type NextRequest, NextResponse } from 'next/server';
 
+const PUBLIC_ROUTES = ['/login', '/register'];
+
 export async function updateSession(request: NextRequest) {
-  const supabaseResponse = NextResponse.next({
-    request,
-  });
+  const supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -23,8 +23,20 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  // Refresh session - getClaims validates the JWT signature
-  await supabase.auth.getClaims();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  const { pathname } = request.nextUrl;
+  const isPublicRoute = PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
+
+  // Redirect authenticated users away from auth pages
+  if (user && isPublicRoute) {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
+  }
+
+  // Redirect unauthenticated users away from protected routes
+  if (!user && !isPublicRoute && pathname !== '/') {
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
 
   return supabaseResponse;
 }
