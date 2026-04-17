@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from '@/infra/supabase/client';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 const SupabaseContext = createContext<SupabaseClient | null>(null);

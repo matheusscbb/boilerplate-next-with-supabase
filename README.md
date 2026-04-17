@@ -39,8 +39,8 @@ Boilerplate de produção com Next.js, Supabase, sistema de temas portátil e de
 │       └── ThemeProvider.tsx   # Injeta tokens como CSS vars no :root via <style>
 ├── design-system/              # Componentes base que consomem o tema
 │   └── src/
-│       ├── primitives/         # Button, Input
-│       ├── components/         # Card
+│       ├── primitives/         # Button, Input, Checkbox
+│       ├── components/         # Card, Accordion, List, Table
 │       └── layout/             # Stack
 ├── middleware.ts               # Next.js middleware — refresh de sessão Supabase
 └── .env.example
@@ -66,7 +66,7 @@ cp .env.example .env.local
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_publishable_key
 ```
 
 Credenciais em: **Supabase Dashboard → Project Settings → API**.
@@ -89,7 +89,7 @@ pnpm start
 ## Deploy na Vercel
 
 1. Conecte o repositório à Vercel
-2. Adicione as variáveis de ambiente (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`)
+2. Adicione as variáveis de ambiente (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`)
 3. Deploy automático a cada push na `main`
 
 ---
@@ -142,11 +142,24 @@ Componentes base em `design-system/src/` que consomem os tokens do tema via CSS 
 |-----------|-----------------|
 | `Button` | `primary`, `secondary`, `ghost`, `danger` · `sm`, `md`, `lg` · `isLoading`, `fullWidth` |
 | `Input` | `error` |
-| `Card` | `CardHeader`, `CardContent`, `CardFooter` |
+| `Checkbox` | `label`, `error` · `sm`, `md`, `lg` |
+| `Card` | Compound: `Card.Header`, `Card.Content`, `Card.Footer` |
+| `Accordion` | Compound: `Accordion.Item` · `title`, `defaultOpen` |
+| `List` | Compound: `List.Item` · `variant` (unordered/ordered/none) |
+| `Table` | Compound: `Table.Head`, `Table.Body`, `Table.Row`, `Table.Header`, `Table.Cell` |
 | `Stack` | `direction` (vertical/horizontal) · `gap` (sm/md/lg) |
 
 ```tsx
-import { Button, Input, Card, CardHeader, CardContent, CardFooter, Stack } from '@/design-system';
+import { Button, Input, Card, Stack } from '@/design-system';
+
+// Card usa padrão compound — sem imports adicionais
+<Card>
+  <Card.Header>Título</Card.Header>
+  <Card.Content>Conteúdo principal</Card.Content>
+  <Card.Footer>
+    <Button>Confirmar</Button>
+  </Card.Footer>
+</Card>
 ```
 
 ---

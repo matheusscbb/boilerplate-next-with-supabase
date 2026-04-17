@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
-import { Button, Input, Card, CardHeader, CardContent, CardFooter, Stack } from '@/design-system';
+import { createClient } from '@/infra/supabase/client';
+import { Button, Input, Card, Stack } from '@/design-system';
 
 export function LoginForm() {
   const [email, setEmail] = useState('');
@@ -33,8 +33,8 @@ export function LoginForm() {
   return (
     <Card>
       <form onSubmit={handleSubmit}>
-        <CardHeader>Entrar</CardHeader>
-        <CardContent>
+        <Card.Header>Entrar</Card.Header>
+        <Card.Content>
           <Stack gap="md">
             <div>
               <label htmlFor="email" className="mb-2 block text-sm font-medium text-foreground">
@@ -65,12 +65,12 @@ export function LoginForm() {
               <p className="text-sm text-destructive">{error}</p>
             )}
           </Stack>
-        </CardContent>
-        <CardFooter>
+        </Card.Content>
+        <Card.Footer>
           <Button type="submit" isLoading={loading} fullWidth>
             Entrar
           </Button>
-        </CardFooter>
+        </Card.Footer>
       </form>
     </Card>
   );

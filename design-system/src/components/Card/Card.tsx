@@ -1,15 +1,16 @@
 'use client';
 
-import type { HTMLAttributes } from 'react';
+import type { CardProps, CardHeaderProps, CardContentProps, CardFooterProps } from './Card.types';
 
-interface CardProps extends HTMLAttributes<HTMLDivElement> {
-  children: React.ReactNode;
-}
-
-export function Card({ children, className = '', ...props }: CardProps) {
+function CardRoot({ children, className = '', ...props }: CardProps) {
   return (
     <div
-      className={`rounded-lg border border-border bg-background p-4 shadow-sm ${className}`}
+      className={[
+        'rounded-lg border border-border bg-background p-4 shadow-sm',
+        className,
+      ]
+        .filter(Boolean)
+        .join(' ')}
       {...props}
     >
       {children}
@@ -17,14 +18,24 @@ export function Card({ children, className = '', ...props }: CardProps) {
   );
 }
 
-export function CardHeader({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return <div className={`mb-4 text-lg font-semibold ${className}`}>{children}</div>;
+function Header({ children, className = '' }: CardHeaderProps) {
+  return (
+    <div className={['mb-4 text-lg font-semibold', className].filter(Boolean).join(' ')}>
+      {children}
+    </div>
+  );
 }
 
-export function CardContent({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return <div className={className}>{children}</div>;
+function Content({ children, className = '' }: CardContentProps) {
+  return <div className={className || undefined}>{children}</div>;
 }
 
-export function CardFooter({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return <div className={`mt-4 flex justify-end gap-2 ${className}`}>{children}</div>;
+function Footer({ children, className = '' }: CardFooterProps) {
+  return (
+    <div className={['mt-4 flex justify-end gap-2', className].filter(Boolean).join(' ')}>
+      {children}
+    </div>
+  );
 }
+
+export const Card = Object.assign(CardRoot, { Header, Content, Footer });
