@@ -1,150 +1,12 @@
 'use client';
 
 import { Input } from '@/design-system';
-import { ExerciseCombobox } from './ExerciseCombobox';
 import type { Exercise } from '@/core/domain';
-
-// ─── Form state types ──────────────────────────────────────────────────────────
-
-export type ExerciseMode = 'strength' | 'cardio';
-export type CardioMode = 'duration' | 'hiit';
-
-export interface ExerciseRow {
-  _id: string;
-  catalogId: string;
-  name: string;
-  mode: ExerciseMode;
-  // Strength
-  sets: string;
-  repsRange: string;
-  restSeconds: string;
-  // Cardio
-  cardioMode: CardioMode;
-  durationMinutes: string;
-  warmupMinutes: string;
-  cycles: string;
-  workSeconds: string;
-  hiitRestSeconds: string;
-}
-
-export function defaultExerciseRow(): ExerciseRow {
-  return {
-    _id: crypto.randomUUID(),
-    catalogId: '',
-    name: '',
-    mode: 'strength',
-    sets: '3',
-    repsRange: '8-12',
-    restSeconds: '60',
-    cardioMode: 'duration',
-    durationMinutes: '30',
-    warmupMinutes: '5',
-    cycles: '10',
-    workSeconds: '40',
-    hiitRestSeconds: '20',
-  };
-}
-
-interface ExerciseFormRowProps {
-  exercise: ExerciseRow;
-  index: number;
-  onUpdate: (updates: Partial<ExerciseRow>) => void;
-  onRemove: () => void;
-}
-
-// ─── Manual mode toggle (only shown for custom exercises) ─────────────────────
-
-function ModeToggle({
-  value,
-  onChange,
-}: {
-  value: ExerciseMode;
-  onChange: (v: ExerciseMode) => void;
-}) {
-  const OPTIONS: { value: ExerciseMode; label: string }[] = [
-    { value: 'strength', label: 'Musculação' },
-    { value: 'cardio', label: 'Cardio' },
-  ];
-  return (
-    <div className="flex h-10 overflow-hidden rounded-md border border-border">
-      {OPTIONS.map((opt) => (
-        <button
-          key={opt.value}
-          type="button"
-          onClick={() => onChange(opt.value)}
-          className={[
-            'px-3 text-xs font-medium transition-colors',
-            value === opt.value
-              ? 'bg-primary text-white'
-              : 'bg-background text-muted-foreground hover:text-foreground',
-          ].join(' ')}
-        >
-          {opt.label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-// ─── Cardio sub-mode toggle ───────────────────────────────────────────────────
-
-function CardioModeToggle({
-  value,
-  onChange,
-}: {
-  value: CardioMode;
-  onChange: (v: CardioMode) => void;
-}) {
-  return (
-    <div className="flex h-10 overflow-hidden rounded-md border border-border">
-      {(['duration', 'hiit'] as const).map((m) => (
-        <button
-          key={m}
-          type="button"
-          onClick={() => onChange(m)}
-          className={[
-            'px-3 text-xs font-medium transition-colors',
-            value === m
-              ? 'bg-primary text-white'
-              : 'bg-background text-muted-foreground hover:text-foreground',
-          ].join(' ')}
-        >
-          {m === 'duration' ? 'Duração' : 'HIIT'}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-// ─── Type badge (catalog-derived, read-only) ──────────────────────────────────
-
-function TypeBadge({ mode }: { mode: ExerciseMode }) {
-  return (
-    <span
-      className={[
-        'inline-flex h-10 items-center rounded-md border px-3 text-xs font-medium',
-        mode === 'cardio'
-          ? 'border-info/30 bg-info/10 text-info'
-          : 'border-primary/30 bg-primary/10 text-primary',
-      ].join(' ')}
-    >
-      {mode === 'cardio' ? 'Cardio' : 'Musculação'}
-    </span>
-  );
-}
-
-// ─── Labeled field ────────────────────────────────────────────────────────────
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="space-y-1">
-      <p className="text-xs font-medium text-muted-foreground">{label}</p>
-      {children}
-    </div>
-  );
-}
-
-// ─── Component ────────────────────────────────────────────────────────────────
+import { ExerciseCombobox } from '../ExerciseCombobox';
+import { CardioModeToggle } from './CardioModeToggle';
+import { Field } from './Field';
+import { ModeToggle } from './ModeToggle';
+import type { ExerciseFormRowProps } from './ExerciseFormRow.types';
 
 export function ExerciseFormRow({
   exercise,
@@ -206,10 +68,7 @@ export function ExerciseFormRow({
           />
         </div>
 
-        {/* Read-only badge when from catalog; toggle when custom */}
-        {fromCatalog ? (
-          <TypeBadge mode={exercise.mode} />
-        ) : (
+        {!fromCatalog && (
           <ModeToggle
             value={exercise.mode}
             onChange={(v) => onUpdate({ mode: v })}

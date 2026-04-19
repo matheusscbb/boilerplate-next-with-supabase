@@ -1,8 +1,6 @@
-'use client';
-
 import type { HTMLAttributes } from 'react';
 
-interface StackProps extends HTMLAttributes<HTMLDivElement> {
+export interface StackProps extends HTMLAttributes<HTMLDivElement> {
   direction?: 'vertical' | 'horizontal';
   gap?: 'sm' | 'md' | 'lg';
   children: React.ReactNode;

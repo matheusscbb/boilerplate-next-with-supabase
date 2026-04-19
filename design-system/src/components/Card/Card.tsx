@@ -1,5 +1,3 @@
-'use client';
-
 import type { CardProps, CardHeaderProps, CardContentProps, CardFooterProps } from './Card.types';
 
 function CardRoot({ children, className = '', ...props }: CardProps) {

@@ -1,93 +1,10 @@
 'use client';
 
 import { Input, Button } from '@/design-system';
-import { ExerciseFormRow, defaultExerciseRow } from './ExerciseFormRow';
-import type { ExerciseRow } from './ExerciseFormRow';
-
-// ─── Types ─────────────────────────────────────────────────────────────────────
-
-export interface DayRow {
-  _id: string;
-  name: string;
-  isRestDay: boolean;
-  exercises: ExerciseRow[];
-}
-
-export function defaultDayRow(index: number): DayRow {
-  return {
-    _id: crypto.randomUUID(),
-    name: `Dia ${String.fromCharCode(65 + index)}`,
-    isRestDay: false,
-    exercises: [defaultExerciseRow()],
-  };
-}
-
-interface WorkoutDayBuilderProps {
-  day: DayRow;
-  index: number;
-  scheduleLabel?: string;
-  canRemove?: boolean;
-  onUpdate: (updates: Partial<Omit<DayRow, '_id'>>) => void;
-  onRemove: () => void;
-}
-
-// ─── Icons ────────────────────────────────────────────────────────────────────
-
-function MoonIcon({ className = '' }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
-    </svg>
-  );
-}
-
-function TrashIcon({ className = '' }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <path d="M3 6h18M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2" />
-    </svg>
-  );
-}
-
-function PlusIcon({ className = '' }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <path d="M12 5v14M5 12h14" />
-    </svg>
-  );
-}
-
-// ─── Component ────────────────────────────────────────────────────────────────
+import { ExerciseFormRow, defaultExerciseRow } from '../ExerciseFormRow';
+import type { ExerciseRow } from '../ExerciseFormRow';
+import { MoonIcon, PlusIcon, TrashIcon } from './icons';
+import type { WorkoutDayBuilderProps } from './WorkoutDayBuilder.types';
 
 export function WorkoutDayBuilder({
   day,
@@ -191,14 +108,12 @@ export function WorkoutDayBuilder({
 
       {/* Body */}
       {day.isRestDay ? (
-        /* Rest day banner */
         <div className="flex flex-col items-center justify-center gap-2 py-10 text-center text-muted-foreground">
           <MoonIcon className="h-8 w-8 opacity-40" />
           <p className="text-sm font-medium">Dia de descanso</p>
           <p className="text-xs opacity-70">Nenhum exercício programado.</p>
         </div>
       ) : (
-        /* Exercises */
         <div className="space-y-2 p-4">
           {day.exercises.map((exercise, exIdx) => (
             <ExerciseFormRow

@@ -1,41 +1,8 @@
 'use client';
 
 import { Input } from '@/design-system';
-
-// ─── Types ─────────────────────────────────────────────────────────────────────
-
-export type ScheduleMode = 'weekdays' | 'interval' | 'cycle';
-
-export interface DaySchedulePickerProps {
-  mode: ScheduleMode;
-  weekdays: number[];
-  intervalDays: string;
-  cycleLength: string;
-  onModeChange: (mode: ScheduleMode) => void;
-  onWeekdaysChange: (days: number[]) => void;
-  onIntervalDaysChange: (value: string) => void;
-  onCycleLengthChange: (value: string) => void;
-}
-
-// ─── Weekday config ────────────────────────────────────────────────────────────
-
-const WEEKDAYS = [
-  { label: 'Dom', value: 0 },
-  { label: 'Seg', value: 1 },
-  { label: 'Ter', value: 2 },
-  { label: 'Qua', value: 3 },
-  { label: 'Qui', value: 4 },
-  { label: 'Sex', value: 5 },
-  { label: 'Sáb', value: 6 },
-] as const;
-
-const MODES: { value: ScheduleMode; label: string }[] = [
-  { value: 'weekdays', label: 'Dias da semana' },
-  { value: 'interval', label: 'A cada X dias' },
-  { value: 'cycle', label: 'Ciclo personalizado' },
-];
-
-// ─── Component ────────────────────────────────────────────────────────────────
+import { MODES, WEEKDAYS } from './config';
+import type { DaySchedulePickerProps } from './DaySchedulePicker.types';
 
 export function DaySchedulePicker({
   mode,

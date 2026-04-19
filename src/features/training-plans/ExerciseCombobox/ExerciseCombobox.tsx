@@ -3,40 +3,9 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { exerciseDatabase, EXERCISE_CATEGORIES } from '@/shared/constants';
 import type { Exercise } from '@/core/domain';
-
-// ─── Normalize helper ─────────────────────────────────────────────────────────
-
-function normalize(text: string): string {
-  return text
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // strip accents: ã→a, é→e, ç→c, etc.
-    .replace(/[^a-z0-9\s]/g, '');   // keep only alphanumeric + spaces
-}
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-export interface ExerciseComboboxProps {
-  value: string;         // catalog exercise id, or '' if none selected
-  onChange: (id: string, exercise: Exercise | null) => void;
-  placeholder?: string;
-  disabled?: boolean;
-}
-
-// ─── Build a flat ordered list for keyboard navigation ────────────────────────
-
-function buildFlatList(filtered: Exercise[]): Exercise[] {
-  // Keep category order from EXERCISE_CATEGORIES
-  const result: Exercise[] = [];
-  for (const cat of EXERCISE_CATEGORIES) {
-    for (const ex of filtered) {
-      if (ex.category === cat) result.push(ex);
-    }
-  }
-  return result;
-}
-
-// ─── Component ────────────────────────────────────────────────────────────────
+import type { ExerciseComboboxProps } from './ExerciseCombobox.types';
+import { buildFlatList, normalize } from './helpers';
+import { CheckIcon, ClearIcon, SearchIcon } from './icons';
 
 export function ExerciseCombobox({
   value,
@@ -145,43 +114,22 @@ export function ExerciseCombobox({
     }
   };
 
-  // ── Display value ──────────────────────────────────────────────────────────
-
   // When open and user is typing: show query.
   // When closed and something is selected: show exercise name.
   // Otherwise: show empty (placeholder).
-  const inputValue = open ? query : (selected ? selected.name : query);
+  const inputValue = open ? query : selected ? selected.name : query;
 
-  // ── Render ────────────────────────────────────────────────────────────────
-
-  // Group filtered for display
-  const groups = EXERCISE_CATEGORIES
-    .map((cat) => ({
-      category: cat,
-      items: filtered.filter((e) => e.category === cat),
-    }))
-    .filter((g) => g.items.length > 0);
+  const groups = EXERCISE_CATEGORIES.map((cat) => ({
+    category: cat,
+    items: filtered.filter((e) => e.category === cat),
+  })).filter((g) => g.items.length > 0);
 
   return (
     <div ref={containerRef} className="relative w-full">
       {/* Input + icons */}
       <div className="relative flex items-center">
-        {/* Search icon */}
         <div className="pointer-events-none absolute left-3 flex items-center text-muted-foreground">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="h-4 w-4"
-            aria-hidden="true"
-          >
-            <circle cx="11" cy="11" r="8" />
-            <path d="m21 21-4.35-4.35" />
-          </svg>
+          <SearchIcon />
         </div>
 
         <input
@@ -205,7 +153,6 @@ export function ExerciseCombobox({
           ].join(' ')}
         />
 
-        {/* Clear button */}
         {(selected || query) && (
           <button
             type="button"
@@ -213,19 +160,7 @@ export function ExerciseCombobox({
             onClick={clearSelection}
             className="absolute right-2.5 flex h-5 w-5 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2.5}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="h-3.5 w-3.5"
-              aria-hidden="true"
-            >
-              <path d="M18 6 6 18M6 6l12 12" />
-            </svg>
+            <ClearIcon />
           </button>
         )}
       </div>
@@ -246,14 +181,12 @@ export function ExerciseCombobox({
             >
               {groups.map(({ category, items }) => (
                 <li key={category} role="presentation">
-                  {/* Category label */}
                   <div className="sticky top-0 bg-muted px-3 py-1.5">
                     <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                       {category}
                     </span>
                   </div>
 
-                  {/* Exercises in this category */}
                   <ul>
                     {items.map((ex) => {
                       const idx = flat.indexOf(ex);
@@ -275,26 +208,12 @@ export function ExerciseCombobox({
                             isHighlighted
                               ? 'bg-primary/10 text-primary'
                               : isSelected
-                              ? 'bg-primary/5 text-primary'
-                              : 'text-foreground hover:bg-muted',
+                                ? 'bg-primary/5 text-primary'
+                                : 'text-foreground hover:bg-muted',
                           ].join(' ')}
                         >
                           <span>{ex.name}</span>
-                          {isSelected && (
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth={2.5}
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              className="h-4 w-4 shrink-0 text-primary"
-                              aria-hidden="true"
-                            >
-                              <path d="M20 6 9 17l-5-5" />
-                            </svg>
-                          )}
+                          {isSelected && <CheckIcon />}
                         </li>
                       );
                     })}

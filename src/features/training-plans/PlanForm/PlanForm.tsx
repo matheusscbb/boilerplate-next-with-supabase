@@ -2,154 +2,20 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button, Input, Checkbox, Stack } from '@/design-system';
-import { DaySchedulePicker } from './DaySchedulePicker';
-import { WorkoutDayBuilder, defaultDayRow } from './WorkoutDayBuilder';
-import type { ScheduleMode } from './DaySchedulePicker';
-import type { DayRow } from './WorkoutDayBuilder';
-import type { CardioConfig, ScheduleConfig } from '@/core/domain';
-
-// ─── Schedule helpers ──────────────────────────────────────────────────────────
-
-const WEEKDAY_LABELS = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
-const WEEKDAY_SHORT  = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-
-function syncDaysToCount(
-  days: DayRow[],
-  count: number,
-  nameFn?: (i: number) => string
-): DayRow[] {
-  if (days.length === count) return days;
-  if (days.length < count) {
-    const extra = Array.from({ length: count - days.length }, (_, i) => {
-      const row = defaultDayRow(days.length + i);
-      if (nameFn) row.name = nameFn(days.length + i);
-      return row;
-    });
-    return [...days, ...extra];
-  }
-  return days.slice(0, count);
-}
-
-// ─── Form state ────────────────────────────────────────────────────────────────
-
-interface FormState {
-  name: string;
-  startDate: string;
-  endDate: string;
-  isActive: boolean;
-  scheduleMode: ScheduleMode;
-  weekdays: number[];
-  intervalDays: string;
-  cycleLength: string;
-  days: DayRow[];
-}
-
-const today = () => new Date().toISOString().split('T')[0];
-
-const INITIAL_WEEKDAYS = [1, 3, 5];
-
-const initialState = (): FormState => ({
-  name: '',
-  startDate: today(),
-  endDate: '',
-  isActive: true,
-  scheduleMode: 'weekdays',
-  weekdays: INITIAL_WEEKDAYS,
-  intervalDays: '2',
-  cycleLength: '7',
-  days: INITIAL_WEEKDAYS.map((wd, i) => ({ ...defaultDayRow(i), name: WEEKDAY_LABELS[wd] })),
-});
-
-// ─── Payload builder ───────────────────────────────────────────────────────────
-
-function buildScheduleConfig(state: FormState): ScheduleConfig {
-  switch (state.scheduleMode) {
-    case 'weekdays':
-      return { type: 'weekdays', days: state.weekdays };
-    case 'interval':
-      return { type: 'interval', interval_days: parseInt(state.intervalDays) || 2 };
-    case 'cycle':
-      return { type: 'cycle', cycle_length: parseInt(state.cycleLength) || 7 };
-  }
-}
-
-function buildPayload(state: FormState) {
-  return {
-    name: state.name,
-    start_date: state.startDate,
-    end_date: state.endDate || null,
-    is_active: state.isActive,
-    schedule_type: state.scheduleMode,
-    schedule_config: buildScheduleConfig(state),
-    days: state.days.map((day, dayIdx) => ({
-      name: day.name,
-      order_index: dayIdx,
-      exercises: day.exercises.map((ex, exIdx) => {
-        if (ex.mode === 'strength') {
-          return {
-            name: ex.name,
-            exercise_type: 'strength' as const,
-            sets: parseInt(ex.sets) || 3,
-            reps_range: ex.repsRange,
-            rest_seconds: parseInt(ex.restSeconds) || 60,
-            cardio_config: null,
-            order_index: exIdx,
-          };
-        }
-
-        const cardioConfig: CardioConfig =
-          ex.cardioMode === 'hiit'
-            ? {
-                mode: 'hiit',
-                warmup_seconds: (parseInt(ex.warmupMinutes) || 5) * 60,
-                cycles: parseInt(ex.cycles) || 10,
-                work_seconds: parseInt(ex.workSeconds) || 40,
-                rest_seconds: parseInt(ex.hiitRestSeconds) || 20,
-              }
-            : {
-                mode: 'duration',
-                duration_seconds: (parseInt(ex.durationMinutes) || 30) * 60,
-              };
-
-        return {
-          name: ex.name,
-          exercise_type: 'cardio' as const,
-          sets: null,
-          reps_range: null,
-          rest_seconds: null,
-          cardio_config: cardioConfig,
-          order_index: exIdx,
-        };
-      }),
-    })),
-  };
-}
-
-// ─── Section wrapper ───────────────────────────────────────────────────────────
-
-function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="space-y-4 rounded-xl border border-border bg-background p-5">
-      <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-        {title}
-      </h2>
-      {children}
-    </div>
-  );
-}
-
-// ─── Component ────────────────────────────────────────────────────────────────
+import { Button, Input, Checkbox, Stack, Switch } from '@/design-system';
+import { DaySchedulePicker } from '../DaySchedulePicker';
+import { WorkoutDayBuilder, defaultDayRow } from '../WorkoutDayBuilder';
+import { WEEKDAY_LABELS, WEEKDAY_SHORT } from './constants';
+import { buildPayload } from './helpers/payload';
+import { initialFormState, syncDaysToCount } from './helpers/schedule';
+import { MuscleVolumeCounter } from './MuscleVolumeCounter';
+import { Section } from './Section';
+import type { FormState } from './PlanForm.types';
+import type { DayRow } from '../WorkoutDayBuilder';
 
 export function PlanForm() {
   const router = useRouter();
-  const [state, setState] = useState<FormState>(initialState);
+  const [state, setState] = useState<FormState>(initialFormState);
   const [loading, setLoading] = useState(false);
 
   // ── Generic field updater ──────────────────────────────────────────────────
@@ -368,6 +234,31 @@ export function PlanForm() {
             </Button>
           )}
         </div>
+
+        {/* ── Volume por grupo muscular ── */}
+        <Section title="Volume por grupo muscular">
+          <div className="space-y-4">
+            <label className="flex cursor-pointer items-center justify-between gap-3">
+              <div>
+                <span className="text-sm font-medium text-foreground">
+                  Contar volume indireto
+                </span>
+                <p className="text-xs text-muted-foreground">
+                  1 série de Costas conta +0,5 de Bíceps · 1 série de Peito conta +0,5 de Tríceps
+                </p>
+              </div>
+              <Switch
+                checked={state.countHalfReps}
+                onChange={(v) => set('countHalfReps', v)}
+              />
+            </label>
+
+            <MuscleVolumeCounter
+              days={state.days}
+              countHalfReps={state.countHalfReps}
+            />
+          </div>
+        </Section>
 
         {/* ── Actions ── */}
         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">

@@ -1,5 +1,3 @@
-'use client';
-
 import type { ListProps, ListItemProps } from './List.types';
 
 const variantStyles = {
