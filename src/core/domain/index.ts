@@ -11,6 +11,7 @@ export type {
   TrainingPlanFull,
   PlanAssignment,
   CoachInvite,
+  TrainerInvite,
   MarkExerciseCompletedArgs,
   ScheduleType,
   ScheduleConfig,

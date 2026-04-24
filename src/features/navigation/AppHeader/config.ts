@@ -1,6 +1,6 @@
 import type { ComponentType } from 'react';
 import type { UserRole } from '@/core/domain';
-import { CalendarIcon, DumbbellIcon, SaladIcon, UsersIcon } from './icons';
+import { CalendarIcon, DumbbellIcon, SaladIcon, UsersIcon, ShieldIcon } from './icons';
 
 export interface NavItem {
   href: string;
@@ -18,6 +18,7 @@ const ALL_ITEMS: readonly NavItem[] = [
   { href: '/plano-de-treino', label: 'Plano de Treino', Icon: CalendarIcon, requiresRole: 'trainer' },
   { href: '/alunos', label: 'Alunos', Icon: UsersIcon, requiresRole: 'trainer' },
   { href: '/dieta', label: 'Dieta', Icon: SaladIcon },
+  { href: '/admin', label: 'Administração', Icon: ShieldIcon, requiresRole: 'admin' },
 ] as const;
 
 /** Filter the nav items for the given user role. */

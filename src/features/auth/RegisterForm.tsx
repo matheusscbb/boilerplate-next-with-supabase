@@ -5,36 +5,43 @@ import Link from 'next/link';
 import { createClient } from '@/infra/supabase/client';
 import { SupabaseAuthRepository } from '@/infra/supabase/SupabaseAuthRepository';
 import { Button, Input, Card, Stack } from '@/design-system';
-import { RoleToggle } from './RoleToggle';
-import type { UserRole } from '@/core/domain';
 
 const authRepo = new SupabaseAuthRepository();
 
 export interface RegisterFormProps {
   /**
-   * When present, the form hides the coach/student toggle, forces role=student,
-   * and runs the accept_coach_invite RPC right after signup so the new student
-   * is linked to the coach that generated the token.
+   * When present, the form forces role=student and runs accept_coach_invite
+   * right after signup so the new student is linked to the coach.
    */
   inviteToken?: string;
+  /**
+   * When present, the form forces role=trainer and runs consume_trainer_invite
+   * right after signup so the new trainer account is properly set up.
+   */
+  trainerInviteToken?: string;
 }
 
-export function RegisterForm({ inviteToken }: RegisterFormProps) {
+export function RegisterForm({ inviteToken, trainerInviteToken }: RegisterFormProps) {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [role, setRole] = useState<UserRole>(inviteToken ? 'student' : 'trainer');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const isTrainerInvite = Boolean(trainerInviteToken);
+  const isCoachInvite = Boolean(inviteToken);
+  const hasInvite = isTrainerInvite || isCoachInvite;
+
+  const effectiveRole = isTrainerInvite ? 'trainer' : 'student';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    if (inviteToken && !fullName.trim()) {
-      setError('O nome é obrigatório para aceitar o convite.');
+    if (!fullName.trim()) {
+      setError('O nome é obrigatório.');
       return;
     }
 
@@ -49,10 +56,10 @@ export function RegisterForm({ inviteToken }: RegisterFormProps) {
     }
 
     setLoading(true);
-    const effectiveRole: UserRole = inviteToken ? 'student' : role;
+
     const { error: signUpError, session } = await authRepo.signUp(
       { email, password },
-      { role: effectiveRole, fullName: fullName.trim() || undefined }
+      { role: effectiveRole, fullName: fullName.trim() }
     );
 
     if (signUpError) {
@@ -61,18 +68,31 @@ export function RegisterForm({ inviteToken }: RegisterFormProps) {
       return;
     }
 
-    // Invite consumption needs a JWT (session). Prefer the session returned by
-    // signUp — getUser() right after can still be empty while cookies settle.
-    // When email confirmation is ON there is no session yet; persist token
-    // for redemption on first login (LoginForm + protected layout).
-    if (inviteToken) {
-      const supabase = createClient();
+    const supabase = createClient();
+
+    if (isTrainerInvite && trainerInviteToken) {
+      if (session?.user) {
+        const { error: rpcError } = await supabase.rpc('consume_trainer_invite', {
+          p_token: trainerInviteToken,
+        });
+        if (rpcError) {
+          console.error('[RegisterForm] trainer invite consumption failed:', rpcError);
+          if (typeof window !== 'undefined') {
+            window.localStorage.setItem('pending_trainer_invite_token', trainerInviteToken);
+          }
+        }
+      } else if (typeof window !== 'undefined') {
+        window.localStorage.setItem('pending_trainer_invite_token', trainerInviteToken);
+      }
+    }
+
+    if (isCoachInvite && inviteToken) {
       if (session?.user) {
         const { error: rpcError } = await supabase.rpc('accept_coach_invite', {
           p_token: inviteToken,
         });
         if (rpcError) {
-          console.error('[RegisterForm] invite acceptance failed:', rpcError);
+          console.error('[RegisterForm] coach invite acceptance failed:', rpcError);
           if (typeof window !== 'undefined') {
             window.localStorage.setItem('pending_invite_token', inviteToken);
           }
@@ -113,36 +133,35 @@ export function RegisterForm({ inviteToken }: RegisterFormProps) {
     <Card>
       <form onSubmit={handleSubmit}>
         <Card.Header>
-          {inviteToken ? 'Aceitar convite do coach' : 'Criar conta'}
+          {isTrainerInvite
+            ? 'Cadastro de Treinador'
+            : isCoachInvite
+              ? 'Aceitar convite do coach'
+              : 'Criar conta'}
         </Card.Header>
         <Card.Content>
           <Stack gap="md">
-            {!inviteToken && (
-              <RoleToggle value={role} onChange={setRole} />
-            )}
-
-            {inviteToken && (
+            {hasInvite && (
               <p className="rounded-md border border-border bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
-                Você foi convidado por um coach. Ao finalizar o cadastro, sua
-                conta será vinculada automaticamente.
+                {isTrainerInvite
+                  ? 'Você foi convidado como treinador. Ao finalizar o cadastro, sua conta terá acesso às funcionalidades de treinador.'
+                  : 'Você foi convidado por um coach. Ao finalizar o cadastro, sua conta será vinculada automaticamente.'}
               </p>
             )}
 
-            {inviteToken && (
-              <div>
-                <label htmlFor="fullName" className="mb-2 block text-sm font-medium text-foreground">
-                  Nome completo <span className="text-destructive">*</span>
-                </label>
-                <Input
-                  id="fullName"
-                  type="text"
-                  placeholder="Seu nome completo"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  required
-                />
-              </div>
-            )}
+            <div>
+              <label htmlFor="fullName" className="mb-2 block text-sm font-medium text-foreground">
+                Nome completo <span className="text-destructive">*</span>
+              </label>
+              <Input
+                id="fullName"
+                type="text"
+                placeholder="Seu nome completo"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                required
+              />
+            </div>
 
             <div>
               <label htmlFor="email" className="mb-2 block text-sm font-medium text-foreground">

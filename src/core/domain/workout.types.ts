@@ -5,7 +5,7 @@
 
 // ─── Primitives ────────────────────────────────────────────────────────────────
 
-export type UserRole = 'trainer' | 'student';
+export type UserRole = 'trainer' | 'student' | 'admin';
 
 // ─── Schedule types ────────────────────────────────────────────────────────────
 
@@ -54,8 +54,20 @@ export interface Profile {
   full_name: string | null;
   /** Only meaningful for students: self-FK to the trainer's profile. */
   coach_id: string | null;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
+}
+
+/** One-shot invite token an admin generates to bring a new trainer on board. */
+export interface TrainerInvite {
+  id: string;
+  token: string;
+  created_by: string;
+  created_at: string;
+  expires_at: string;
+  used_at: string | null;
+  used_by: string | null;
 }
 
 /**
