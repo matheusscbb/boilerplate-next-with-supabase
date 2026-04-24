@@ -4,17 +4,18 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Header } from '@/design-system';
 import { SupabaseAuthRepository } from '@/infra/supabase/SupabaseAuthRepository';
-import { NAV_ITEMS } from './config';
+import { getNavItems } from './config';
 import { LogOutIcon, UserIcon } from './icons';
 import { LogoMark } from './LogoMark';
 import type { AppHeaderProps } from './AppHeader.types';
 
 const authRepo = new SupabaseAuthRepository();
 
-export function AppHeader({ user }: AppHeaderProps) {
+export function AppHeader({ user, role }: AppHeaderProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [loggingOut, setLoggingOut] = useState(false);
+  const navItems = getNavItems(role);
 
   const name: string = user.user_metadata?.full_name ?? user.user_metadata?.name ?? '';
   const email: string = user.email ?? '';
@@ -47,7 +48,7 @@ export function AppHeader({ user }: AppHeaderProps) {
 
       {/* Desktop navigation */}
       <Header.Nav>
-        {NAV_ITEMS.map(({ href, label, Icon }) => (
+        {navItems.map(({ href, label, Icon }) => (
           <Header.NavItem key={href} href={href} active={pathname.startsWith(href)}>
             <Icon />
             {label}
@@ -78,7 +79,7 @@ export function AppHeader({ user }: AppHeaderProps) {
           <p className="mb-1 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Navegação
           </p>
-          {NAV_ITEMS.map(({ href, label, Icon }) => (
+          {navItems.map(({ href, label, Icon }) => (
             <Header.MobileNavItem
               key={href}
               href={href}

@@ -9,7 +9,8 @@ export interface PlanCardData {
   schedule_type: string;
   schedule_config: ScheduleConfig;
   day_count: number;
-  student_name?: string | null;
+  /** How many students this plan is attached to (0 when not assigned yet). */
+  assignment_count: number;
 }
 
 export interface PlanCardProps {

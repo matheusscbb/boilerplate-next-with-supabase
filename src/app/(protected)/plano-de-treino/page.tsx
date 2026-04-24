@@ -47,9 +47,14 @@ function EmptyState() {
 export default async function PlanosPage() {
   const supabase = await createClient();
 
-  // Query plans with nested day count
-  // The `training_plans` table must exist (run migrations first).
-  const { data: rows, error } = await supabase
+  // Trainer-owned plans only. Assignments are loaded as an aggregate so we can
+  // show "N alunos atribuídos" on the card.
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const trainerId = user?.id;
+
+  const query = supabase
     .from('training_plans')
     .select(
       `
@@ -60,11 +65,15 @@ export default async function PlanosPage() {
       end_date,
       schedule_type,
       schedule_config,
-      student:profiles!student_id(full_name),
-      days:training_days(id)
+      days:training_days(id),
+      assignments:plan_assignments(id)
     `
     )
     .order('created_at', { ascending: false });
+
+  const { data: rows, error } = trainerId
+    ? await query.eq('trainer_id', trainerId)
+    : await query;
 
   // If tables don't exist yet or there's a permission error, show empty state
   const plans: PlanCardData[] =
@@ -78,9 +87,9 @@ export default async function PlanosPage() {
           schedule_type: r.schedule_type,
           schedule_config: r.schedule_config as ScheduleConfig,
           day_count: Array.isArray(r.days) ? r.days.length : 0,
-          student_name: Array.isArray(r.student)
-            ? (r.student[0] as { full_name: string | null })?.full_name
-            : (r.student as { full_name: string | null } | null)?.full_name,
+          assignment_count: Array.isArray(r.assignments)
+            ? r.assignments.length
+            : 0,
         }))
       : [];
 

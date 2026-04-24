@@ -4,19 +4,28 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button, Input, Checkbox, Stack, Switch } from '@/design-system';
 import { DaySchedulePicker } from '../DaySchedulePicker';
-import { WorkoutDayBuilder, defaultDayRow } from '../WorkoutDayBuilder';
+import { defaultDayRow } from '../WorkoutDayBuilder';
+import { WorkoutDaysList } from '../WorkoutDaysList';
 import { WEEKDAY_LABELS, WEEKDAY_SHORT } from './constants';
-import { buildPayload } from './helpers/payload';
+import { savePlan, updatePlan } from './helpers/save';
 import { initialFormState, syncDaysToCount } from './helpers/schedule';
 import { MuscleVolumeCounter } from './MuscleVolumeCounter';
 import { Section } from './Section';
 import type { FormState } from './PlanForm.types';
-import type { DayRow } from '../WorkoutDayBuilder';
 
-export function PlanForm() {
+export interface PlanFormProps {
+  /** When set, submit updates this plan instead of creating a new one. */
+  planId?: string;
+  initialState?: FormState;
+}
+
+export function PlanForm({ planId, initialState }: PlanFormProps = {}) {
   const router = useRouter();
-  const [state, setState] = useState<FormState>(initialFormState);
+  const [state, setState] = useState<FormState>(
+    () => initialState ?? initialFormState()
+  );
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // ── Generic field updater ──────────────────────────────────────────────────
 
@@ -31,40 +40,32 @@ export function PlanForm() {
       days: [...prev.days, defaultDayRow(prev.days.length)],
     }));
 
-  const removeDay = (dayId: string) =>
-    setState((prev) => ({
-      ...prev,
-      days: prev.days.filter((d) => d._id !== dayId),
-    }));
-
-  const updateDay = (dayId: string, updates: Partial<Omit<DayRow, '_id'>>) =>
-    setState((prev) => ({
-      ...prev,
-      days: prev.days.map((d) => (d._id === dayId ? { ...d, ...updates } : d)),
-    }));
+  // Per-index weekday abbreviations (only relevant in `weekdays` mode).
+  const scheduleLabels =
+    state.scheduleMode === 'weekdays'
+      ? state.weekdays.map((wd) => WEEKDAY_SHORT[wd])
+      : undefined;
 
   // ── Submit ────────────────────────────────────────────────────────────────
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setErrorMessage(null);
 
     try {
-      const payload = buildPayload(state);
-
-      // TODO: replace with Supabase insert after tables are applied
-      // const supabase = createClient();
-      // const { data: plan } = await supabase.from('training_plans').insert({...}).select().single();
-      // ...insert days and exercises in sequence...
-
-      console.log('[PlanForm] payload:', JSON.stringify(payload, null, 2));
-
-      // Simulate async save
-      await new Promise((r) => setTimeout(r, 400));
+      if (planId) {
+        await updatePlan(planId, state);
+      } else {
+        await savePlan(state);
+      }
       router.push('/plano-de-treino');
+      router.refresh();
     } catch (err) {
-      console.error(err);
-    } finally {
+      console.error('[PlanForm] save failed:', err);
+      setErrorMessage(
+        err instanceof Error ? err.message : 'Erro ao salvar o plano.'
+      );
       setLoading(false);
     }
   };
@@ -192,23 +193,12 @@ export function PlanForm() {
             </span>
           </div>
 
-          <Stack gap="md">
-            {state.days.map((day, idx) => (
-              <WorkoutDayBuilder
-                key={day._id}
-                day={day}
-                index={idx}
-                scheduleLabel={
-                  state.scheduleMode === 'weekdays'
-                    ? WEEKDAY_SHORT[state.weekdays[idx]]
-                    : undefined
-                }
-                canRemove={state.scheduleMode === 'interval'}
-                onUpdate={(updates) => updateDay(day._id, updates)}
-                onRemove={() => removeDay(day._id)}
-              />
-            ))}
-          </Stack>
+          <WorkoutDaysList
+            days={state.days}
+            onChange={(days) => set('days', days)}
+            scheduleLabels={scheduleLabels}
+            canRemove={state.scheduleMode === 'interval'}
+          />
 
           {state.scheduleMode === 'interval' && (
             <Button
@@ -261,17 +251,28 @@ export function PlanForm() {
         </Section>
 
         {/* ── Actions ── */}
-        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => router.push('/plano-de-treino')}
-          >
-            Cancelar
-          </Button>
-          <Button type="submit" isLoading={loading} disabled={!isValid}>
-            Salvar plano
-          </Button>
+        <div className="space-y-3">
+          {errorMessage && (
+            <div
+              role="alert"
+              className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+            >
+              {errorMessage}
+            </div>
+          )}
+
+          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => router.push('/plano-de-treino')}
+            >
+              Cancelar
+            </Button>
+            <Button type="submit" isLoading={loading} disabled={!isValid}>
+              {planId ? 'Salvar alterações' : 'Salvar plano'}
+            </Button>
+          </div>
         </div>
       </Stack>
     </form>

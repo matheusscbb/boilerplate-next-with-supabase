@@ -9,6 +9,8 @@ export type {
   TrainingDayWithExercises,
   ProfileSummary,
   TrainingPlanFull,
+  PlanAssignment,
+  CoachInvite,
   MarkExerciseCompletedArgs,
   ScheduleType,
   ScheduleConfig,
@@ -24,3 +26,11 @@ export type {
   ExerciseType,
   Exercise,
 } from './exercise-catalog.types';
+export type {
+  WorkoutSession,
+  ExerciseLog,
+  ExerciseSetLog,
+  ExerciseLogWithSets,
+  WorkoutSessionFull,
+  WorkoutSessionSummary,
+} from './workout-logs.types';

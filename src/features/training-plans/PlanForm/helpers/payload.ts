@@ -33,6 +33,7 @@ export function buildPayload(state: FormState) {
         if (ex.mode === 'strength') {
           return {
             name: ex.name,
+            catalog_exercise_id: ex.catalogId.trim() || null,
             exercise_type: 'strength' as const,
             sets: parseInt(ex.sets) || 3,
             reps_range: ex.repsRange,
@@ -58,6 +59,7 @@ export function buildPayload(state: FormState) {
 
         return {
           name: ex.name,
+          catalog_exercise_id: ex.catalogId.trim() || null,
           exercise_type: 'cardio' as const,
           sets: null,
           reps_range: null,

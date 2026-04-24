@@ -1,5 +1,6 @@
 import type { ExerciseRow } from '../ExerciseFormRow';
 import { defaultExerciseRow } from '../ExerciseFormRow';
+import type { DragBindings } from '../_shared/dnd';
 
 export interface DayRow {
   _id: string;
@@ -17,7 +18,9 @@ export function defaultDayRow(index: number): DayRow {
   };
 }
 
-export interface WorkoutDayBuilderProps {
+export type { DragBindings } from '../_shared/dnd';
+
+export interface WorkoutDayBuilderProps extends DragBindings {
   day: DayRow;
   index: number;
   scheduleLabel?: string;

@@ -28,9 +28,18 @@ export function PlanCard({ plan }: PlanCardProps) {
 
       {/* Meta info */}
       <div className="flex-1 space-y-2">
-        {plan.student_name && (
-          <PlanCardRow icon={<UserIcon />} text={plan.student_name} />
-        )}
+        <PlanCardRow
+          icon={<UserIcon />}
+          text={
+            plan.assignment_count === 0
+              ? 'Sem alunos atribuídos'
+              : `${plan.assignment_count} ${
+                  plan.assignment_count === 1
+                    ? 'aluno atribuído'
+                    : 'alunos atribuídos'
+                }`
+          }
+        />
         <PlanCardRow
           icon={<CalendarIcon />}
           text={formatDateRange(plan.start_date, plan.end_date)}

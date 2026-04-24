@@ -6,6 +6,10 @@ export { Select } from './primitives/Select';
 export type { SelectProps } from './primitives/Select';
 export { Input } from './primitives/Input';
 export type { InputProps } from './primitives/Input';
+export { Textarea } from './primitives/Textarea';
+export type { TextareaProps } from './primitives/Textarea';
+export { NumberStepper } from './primitives/NumberStepper';
+export type { NumberStepperProps } from './primitives/NumberStepper';
 export { Checkbox } from './primitives/Checkbox';
 export type { CheckboxProps } from './primitives/Checkbox';
 export { Switch } from './primitives/Switch';
@@ -15,7 +19,16 @@ export type { CardProps, CardHeaderProps, CardContentProps, CardFooterProps } fr
 export { Chip } from './components/Chip';
 export type { ChipProps, ChipIconProps, ChipRemoveProps } from './components/Chip';
 export { Accordion } from './components/Accordion';
-export type { AccordionProps, AccordionItemProps } from './components/Accordion';
+export type {
+  AccordionProps,
+  AccordionSingleProps,
+  AccordionMultipleProps,
+  AccordionItemProps,
+  AccordionHeaderProps,
+  AccordionTriggerProps,
+  AccordionContentProps,
+  AccordionType,
+} from './components/Accordion';
 export { List } from './components/List';
 export type { ListProps, ListItemProps } from './components/List';
 export { Table } from './components/Table';
@@ -27,6 +40,22 @@ export type {
   TableHeaderProps,
   TableCellProps,
 } from './components/Table';
+export { Calendar } from './components/Calendar';
+export type { CalendarProps, CalendarDayMarker } from './components/Calendar';
+export { Tabs } from './components/Tabs';
+export type {
+  TabsProps,
+  TabsListProps,
+  TabsTriggerProps,
+  TabsPanelProps,
+} from './components/Tabs';
+export { Dialog } from './components/Dialog';
+export type {
+  DialogProps,
+  DialogHeaderProps,
+  DialogBodyProps,
+  DialogFooterProps,
+} from './components/Dialog';
 export { Stack } from './layout/Stack';
 export type { StackProps } from './layout/Stack';
 export { useThemeTokens } from './theme-adapter/useThemeTokens';

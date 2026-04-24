@@ -1,3 +1,5 @@
+import type { DragBindings } from '../_shared/dnd';
+
 export type ExerciseMode = 'strength' | 'cardio';
 export type CardioMode = 'duration' | 'hiit';
 
@@ -37,7 +39,7 @@ export function defaultExerciseRow(): ExerciseRow {
   };
 }
 
-export interface ExerciseFormRowProps {
+export interface ExerciseFormRowProps extends DragBindings {
   exercise: ExerciseRow;
   index: number;
   onUpdate: (updates: Partial<ExerciseRow>) => void;

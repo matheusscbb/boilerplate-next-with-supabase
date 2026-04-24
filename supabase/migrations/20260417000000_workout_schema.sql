@@ -7,19 +7,10 @@
 
 
 -- -----------------------------------------------------------------------------
--- 1. Enum + Helper Function
+-- 1. Enum
 -- -----------------------------------------------------------------------------
 
 CREATE TYPE user_role AS ENUM ('trainer', 'student');
-
--- Reusable helper that returns TRUE when the current JWT belongs to a trainer.
--- SECURITY DEFINER so it runs as the owner and can always read profiles.
-CREATE OR REPLACE FUNCTION is_trainer()
-RETURNS BOOLEAN LANGUAGE sql SECURITY DEFINER STABLE AS $$
-  SELECT EXISTS (
-    SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'trainer'
-  );
-$$;
 
 
 -- -----------------------------------------------------------------------------
@@ -35,6 +26,15 @@ CREATE TABLE profiles (
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Reusable helper that returns TRUE when the current JWT belongs to a trainer.
+-- SECURITY DEFINER so it runs as the owner and can always read profiles.
+CREATE OR REPLACE FUNCTION is_trainer()
+RETURNS BOOLEAN LANGUAGE sql SECURITY DEFINER STABLE AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'trainer'
+  );
+$$;
 
 -- A training plan belongs to one student and was designed by one trainer.
 CREATE TABLE training_plans (

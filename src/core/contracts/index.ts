@@ -1,1 +1,5 @@
-export type { IAuthRepository, AuthCredentials } from './IAuthRepository';
+export type {
+  IAuthRepository,
+  AuthCredentials,
+  SignUpOptions,
+} from './IAuthRepository';

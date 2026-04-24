@@ -52,13 +52,18 @@ export interface Profile {
   id: string;
   role: UserRole;
   full_name: string | null;
+  /** Only meaningful for students: self-FK to the trainer's profile. */
+  coach_id: string | null;
   created_at: string;
   updated_at: string;
 }
 
+/**
+ * A training plan is a reusable template owned by a trainer. Students are
+ * attached through `plan_assignments` rather than directly on this row.
+ */
 export interface TrainingPlan {
   id: string;
-  student_id: string;
   trainer_id: string;
   name: string;
   start_date: string;       // ISO date string: "YYYY-MM-DD"
@@ -68,6 +73,26 @@ export interface TrainingPlan {
   schedule_config: ScheduleConfig;
   created_at: string;
   updated_at: string;
+}
+
+/** Attachment row linking a plan to a student. */
+export interface PlanAssignment {
+  id: string;
+  plan_id: string;
+  student_id: string;
+  is_active: boolean;
+  assigned_at: string;
+}
+
+/** One-shot invite token a coach generates to bring a student on board. */
+export interface CoachInvite {
+  id: string;
+  token: string;
+  coach_id: string;
+  created_at: string;
+  expires_at: string;
+  used_at: string | null;
+  used_by: string | null;
 }
 
 export interface TrainingDay {
@@ -82,6 +107,8 @@ export interface TrainingDay {
 export interface PlanExercise {
   id: string;
   day_id: string;
+  /** Optional catalog id (e.g. exerciseDatabase / exercises_catalog). */
+  catalog_exercise_id: string | null;
   name: string;
   exercise_type: 'strength' | 'cardio';
   // Strength fields (null for cardio)
@@ -117,18 +144,20 @@ export type ProfileSummary = Pick<Profile, 'id' | 'full_name' | 'role'>;
  *     .from('training_plans')
  *     .select(`
  *       *,
- *       student:profiles!student_id(id, full_name, role),
  *       trainer:profiles!trainer_id(id, full_name, role),
+ *       assignments:plan_assignments(
+ *         student:profiles!student_id(id, full_name, role)
+ *       ),
  *       days:training_days(
  *         *,
  *         exercises(*)
  *       )
  *     `)
  */
-export interface TrainingPlanFull
-  extends Omit<TrainingPlan, 'student_id' | 'trainer_id'> {
-  student: ProfileSummary;
+export interface TrainingPlanFull extends Omit<TrainingPlan, 'trainer_id'> {
   trainer: ProfileSummary;
+  /** The student viewing the plan (populated when queried from a student context). */
+  student?: ProfileSummary;
   days: TrainingDayWithExercises[];
 }
 

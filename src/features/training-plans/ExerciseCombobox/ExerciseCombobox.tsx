@@ -10,6 +10,7 @@ import { CheckIcon, ClearIcon, SearchIcon } from './icons';
 export function ExerciseCombobox({
   value,
   onChange,
+  displayNameFallback = '',
   placeholder = 'Buscar exercício…',
   disabled = false,
 }: ExerciseComboboxProps) {
@@ -116,8 +117,12 @@ export function ExerciseCombobox({
 
   // When open and user is typing: show query.
   // When closed and something is selected: show exercise name.
-  // Otherwise: show empty (placeholder).
-  const inputValue = open ? query : selected ? selected.name : query;
+  // Otherwise: typed query, or custom name from parent (e.g. loaded from DB).
+  const fallbackClosed =
+    (query.trim() || displayNameFallback.trim() || '').length > 0
+      ? query.trim() || displayNameFallback
+      : '';
+  const inputValue = open ? query : selected ? selected.name : fallbackClosed;
 
   const groups = EXERCISE_CATEGORIES.map((cat) => ({
     category: cat,
@@ -153,7 +158,7 @@ export function ExerciseCombobox({
           ].join(' ')}
         />
 
-        {(selected || query) && (
+        {(selected || query.trim() || displayNameFallback.trim()) && (
           <button
             type="button"
             aria-label="Limpar seleção"
