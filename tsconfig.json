@@ -34,5 +34,11 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "src/infra/http",
+    "src/infra/i18n"
+  ]
 }
