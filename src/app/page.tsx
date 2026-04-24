@@ -14,12 +14,12 @@ export default function Home() {
         >
           Entrar
         </Link>
-        <Link
+        {/* <Link
           href="/register"
           className="inline-flex items-center justify-center rounded-md border border-primary px-4 py-2 font-medium text-primary transition-opacity hover:opacity-90"
         >
           Criar conta
-        </Link>
+        </Link> */}
       </div>
     </main>
   );
