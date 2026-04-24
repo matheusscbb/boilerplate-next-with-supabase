@@ -2,63 +2,98 @@
 
 import { useState } from 'react';
 import { Button, Dialog, Stack } from '@/design-system';
-import { createTrainerInvite } from './actions';
+import { createTrainerInvite, listActiveTrainerInvites } from './actions';
+import type { TrainerInviteSummary } from './types';
 
 interface GenerateTrainerInviteDialogProps {
   trigger?: React.ReactNode;
 }
 
-export function GenerateTrainerInviteDialog({ trigger }: GenerateTrainerInviteDialogProps) {
-  const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<{ url: string; expires_at: string } | null>(null);
-  const [error, setError] = useState<string | null>(null);
+function fmtDate(iso: string) {
+  return new Date(iso).toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+}
+
+function InviteRow({ invite }: { invite: TrainerInviteSummary }) {
   const [copied, setCopied] = useState(false);
 
-  const handleGenerate = async () => {
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(invite.url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="rounded-md border border-border bg-muted/30 p-3">
+      <div className="flex items-start gap-2">
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-mono text-xs text-foreground">{invite.url}</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Gerado em {fmtDate(invite.created_at)} · Expira em {fmtDate(invite.expires_at)}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={handleCopy}
+          className="shrink-0 rounded px-2 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/10"
+        >
+          {copied ? 'Copiado!' : 'Copiar'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export function GenerateTrainerInviteDialog({ trigger }: GenerateTrainerInviteDialogProps) {
+  const [open, setOpen] = useState(false);
+  const [invites, setInvites] = useState<TrainerInviteSummary[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleOpen = async () => {
+    setOpen(true);
     setLoading(true);
     setError(null);
     try {
-      const data = await createTrainerInvite();
-      setResult({ url: data.url, expires_at: data.expires_at });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao gerar convite.');
+      const data = await listActiveTrainerInvites();
+      setInvites(data);
+    } catch {
+      setError('Erro ao carregar convites.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCopy = async () => {
-    if (!result) return;
-    await navigator.clipboard.writeText(result.url);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const handleGenerate = async () => {
+    setGenerating(true);
+    setError(null);
+    try {
+      const newInvite = await createTrainerInvite();
+      setInvites((prev) => [newInvite, ...prev]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao gerar convite.');
+    } finally {
+      setGenerating(false);
+    }
   };
 
   const handleClose = () => {
     setOpen(false);
-    setResult(null);
+    setInvites([]);
     setError(null);
-    setCopied(false);
   };
-
-  const expiresFormatted = result
-    ? new Date(result.expires_at).toLocaleDateString('pt-BR', {
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      })
-    : '';
 
   return (
     <>
       <span
         role="button"
         tabIndex={0}
-        onClick={() => setOpen(true)}
-        onKeyDown={(e) => e.key === 'Enter' && setOpen(true)}
+        onClick={handleOpen}
+        onKeyDown={(e) => e.key === 'Enter' && handleOpen()}
         className="contents"
       >
         {trigger ?? (
@@ -68,16 +103,21 @@ export function GenerateTrainerInviteDialog({ trigger }: GenerateTrainerInviteDi
         )}
       </span>
 
-      <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose(); }}>
+      <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose(); }} size="lg">
         <Dialog.Header>
-          Convite para Treinador
+          Convites para Treinador
         </Dialog.Header>
 
         <Dialog.Body>
           <Stack gap="md">
-            <p className="text-sm text-muted-foreground">
-              Gere um link único para convidar um novo treinador. O link expira em 7 dias.
-            </p>
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm text-muted-foreground">
+                Links válidos (não utilizados e dentro do prazo de 7 dias).
+              </p>
+              <Button size="sm" onClick={handleGenerate} isLoading={generating}>
+                + Novo convite
+              </Button>
+            </div>
 
             {error && (
               <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
@@ -85,37 +125,21 @@ export function GenerateTrainerInviteDialog({ trigger }: GenerateTrainerInviteDi
               </p>
             )}
 
-            {!result && (
-              <Button onClick={handleGenerate} isLoading={loading} fullWidth>
-                Gerar link de convite
-              </Button>
-            )}
-
-            {result && (
-              <Stack gap="sm">
-                <div>
-                  <p className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                    Link de cadastro
-                  </p>
-                  <div className="flex items-center gap-2 rounded-md border border-border bg-muted/40 px-3 py-2">
-                    <p className="min-w-0 flex-1 truncate font-mono text-xs text-foreground">
-                      {result.url}
-                    </p>
-                    <button
-                      type="button"
-                      onClick={handleCopy}
-                      className="shrink-0 rounded px-2 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/10"
-                    >
-                      {copied ? 'Copiado!' : 'Copiar'}
-                    </button>
-                  </div>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Expira em: {expiresFormatted}
+            {loading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+              </div>
+            ) : invites.length === 0 ? (
+              <div className="rounded-lg border border-dashed border-border py-8 text-center">
+                <p className="text-sm text-muted-foreground">
+                  Nenhum convite ativo. Clique em &quot;+ Novo convite&quot; para gerar um.
                 </p>
-                <Button variant="secondary" size="sm" onClick={handleGenerate} isLoading={loading}>
-                  Gerar novo link
-                </Button>
+              </div>
+            ) : (
+              <Stack gap="sm">
+                {invites.map((invite) => (
+                  <InviteRow key={invite.id} invite={invite} />
+                ))}
               </Stack>
             )}
           </Stack>

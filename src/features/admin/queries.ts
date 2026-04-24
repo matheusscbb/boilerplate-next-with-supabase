@@ -3,22 +3,15 @@ import type { TrainerRow, StudentRow } from './types';
 
 type AnySupabase = SupabaseClient;
 
-/**
- * Returns all trainers with their student count.
- * Uses auth.users for the email via a Supabase admin query is not available
- * client-side, so email must be fetched separately or stored in profiles.
- * For now we return what's available in profiles.
- */
 export async function listAllTrainers(supabase: AnySupabase): Promise<TrainerRow[]> {
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, full_name, is_active, created_at')
+    .select('id, full_name, is_active, created_at, license_expires_at')
     .eq('role', 'trainer')
     .order('created_at', { ascending: false });
 
   if (error || !data) return [];
 
-  // Fetch student counts for each trainer
   const trainerIds = data.map((t) => t.id);
   let studentCounts: Record<string, number> = {};
 
@@ -44,12 +37,10 @@ export async function listAllTrainers(supabase: AnySupabase): Promise<TrainerRow
     is_active: row.is_active ?? true,
     student_count: studentCounts[row.id] ?? 0,
     created_at: row.created_at,
+    license_expires_at: row.license_expires_at ?? null,
   }));
 }
 
-/**
- * Returns all students with their linked trainer name.
- */
 export async function listAllStudents(supabase: AnySupabase): Promise<StudentRow[]> {
   const { data, error } = await supabase
     .from('profiles')

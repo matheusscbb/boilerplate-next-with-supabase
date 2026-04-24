@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { Badge } from '@/design-system';
-import { toggleUserActive } from './actions';
+import { toggleUserActive, updateTrainerLicense } from './actions';
 import { GenerateTrainerInviteDialog } from './GenerateTrainerInviteDialog';
 import type { TrainerRow } from './types';
 
@@ -10,10 +10,97 @@ interface TrainersTableProps {
   trainers: TrainerRow[];
 }
 
+function LicenseCell({
+  trainerId,
+  value,
+  isPending,
+}: {
+  trainerId: string;
+  value: string | null;
+  isPending: boolean;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [inputValue, setInputValue] = useState(
+    value ? value.slice(0, 10) : '' // YYYY-MM-DD
+  );
+  const [saving, setSaving] = useState(false);
+
+  const isExpired = value !== null && new Date(value) < new Date();
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const isoValue = inputValue ? new Date(inputValue).toISOString() : null;
+      await updateTrainerLicense(trainerId, isoValue);
+    } catch {
+      // silently restore
+    } finally {
+      setSaving(false);
+      setEditing(false);
+    }
+  };
+
+  if (editing) {
+    return (
+      <div className="flex items-center gap-1">
+        <input
+          type="date"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          className="rounded border border-border bg-background px-2 py-0.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+        />
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={saving}
+          className="rounded px-1.5 py-0.5 text-xs font-medium text-primary hover:bg-primary/10 disabled:opacity-50"
+        >
+          {saving ? '…' : 'OK'}
+        </button>
+        <button
+          type="button"
+          onClick={() => setEditing(false)}
+          className="rounded px-1.5 py-0.5 text-xs text-muted-foreground hover:bg-muted"
+        >
+          ✕
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => !isPending && setEditing(true)}
+      disabled={isPending}
+      title="Clique para editar"
+      className="group flex items-center gap-1 text-left disabled:opacity-50"
+    >
+      {value ? (
+        <span
+          className={`text-sm ${
+            isExpired ? 'font-medium text-destructive' : 'text-foreground'
+          }`}
+        >
+          {new Date(value).toLocaleDateString('pt-BR')}
+          {isExpired && (
+            <span className="ml-1 text-xs text-destructive">(expirada)</span>
+          )}
+        </span>
+      ) : (
+        <span className="text-sm text-muted-foreground">—</span>
+      )}
+      <span className="opacity-0 text-xs text-muted-foreground group-hover:opacity-100">
+        ✏
+      </span>
+    </button>
+  );
+}
+
 export function TrainersTable({ trainers }: TrainersTableProps) {
   const [search, setSearch] = useState('');
   const [isPending, startTransition] = useTransition();
-  const [optimisticState, setOptimisticState] = useState<Record<string, boolean>>({});
+  const [optimisticActive, setOptimisticActive] = useState<Record<string, boolean>>({});
 
   const filtered = trainers.filter((t) => {
     if (!search.trim()) return true;
@@ -26,18 +113,18 @@ export function TrainersTable({ trainers }: TrainersTableProps) {
 
   const handleToggleActive = (trainer: TrainerRow) => {
     const newValue = !trainer.is_active;
-    setOptimisticState((prev) => ({ ...prev, [trainer.id]: newValue }));
+    setOptimisticActive((prev) => ({ ...prev, [trainer.id]: newValue }));
     startTransition(async () => {
       try {
         await toggleUserActive(trainer.id, newValue);
       } catch {
-        setOptimisticState((prev) => ({ ...prev, [trainer.id]: trainer.is_active }));
+        setOptimisticActive((prev) => ({ ...prev, [trainer.id]: trainer.is_active }));
       }
     });
   };
 
   const isActive = (trainer: TrainerRow) =>
-    optimisticState[trainer.id] ?? trainer.is_active;
+    optimisticActive[trainer.id] ?? trainer.is_active;
 
   return (
     <div>
@@ -59,13 +146,16 @@ export function TrainersTable({ trainers }: TrainersTableProps) {
           </p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-border">
+        <div className="overflow-x-auto rounded-lg border border-border">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/50">
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">Nome</th>
                 <th className="hidden px-4 py-3 text-left font-medium text-muted-foreground sm:table-cell">
                   Alunos
+                </th>
+                <th className="hidden px-4 py-3 text-left font-medium text-muted-foreground lg:table-cell">
+                  Licença expira em
                 </th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">Status</th>
                 <th className="px-4 py-3 text-right font-medium text-muted-foreground">Ações</th>
@@ -84,11 +174,18 @@ export function TrainersTable({ trainers }: TrainersTableProps) {
                         {trainer.full_name ?? '—'}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        {new Date(trainer.created_at).toLocaleDateString('pt-BR')}
+                        Desde {new Date(trainer.created_at).toLocaleDateString('pt-BR')}
                       </div>
                     </td>
                     <td className="hidden px-4 py-3 text-muted-foreground sm:table-cell">
                       {trainer.student_count}
+                    </td>
+                    <td className="hidden px-4 py-3 lg:table-cell">
+                      <LicenseCell
+                        trainerId={trainer.id}
+                        value={trainer.license_expires_at}
+                        isPending={isPending}
+                      />
                     </td>
                     <td className="px-4 py-3">
                       <Badge variant={active ? 'success' : 'danger'}>
@@ -103,7 +200,7 @@ export function TrainersTable({ trainers }: TrainersTableProps) {
                               type="button"
                               className="rounded px-2 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/10"
                             >
-                              Gerar convite
+                              Convites
                             </button>
                           }
                         />

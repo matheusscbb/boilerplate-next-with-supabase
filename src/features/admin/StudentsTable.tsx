@@ -72,11 +72,14 @@ export function StudentsTable({ students, allTrainers }: StudentsTableProps) {
           </p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-border">
+        <div className="overflow-x-auto rounded-lg border border-border">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/50">
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">Nome</th>
+                <th className="hidden px-4 py-3 text-left font-medium text-muted-foreground sm:table-cell">
+                  Cadastrado em
+                </th>
                 <th className="hidden px-4 py-3 text-left font-medium text-muted-foreground md:table-cell">
                   Treinador
                 </th>
@@ -97,9 +100,13 @@ export function StudentsTable({ students, allTrainers }: StudentsTableProps) {
                       <div className="font-medium text-foreground">
                         {student.full_name ?? '—'}
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        {new Date(student.created_at).toLocaleDateString('pt-BR')}
-                      </div>
+                    </td>
+                    <td className="hidden px-4 py-3 text-muted-foreground sm:table-cell">
+                      {new Date(student.created_at).toLocaleDateString('pt-BR', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                      })}
                     </td>
                     <td className="hidden px-4 py-3 md:table-cell">
                       <select
@@ -124,7 +131,7 @@ export function StudentsTable({ students, allTrainers }: StudentsTableProps) {
                       </Badge>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center justify-end gap-2">
+                      <div className="flex items-center justify-end">
                         <button
                           type="button"
                           disabled={isPending}

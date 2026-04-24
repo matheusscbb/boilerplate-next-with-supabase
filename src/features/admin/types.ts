@@ -5,6 +5,8 @@ export interface TrainerRow {
   is_active: boolean;
   student_count: number;
   created_at: string;
+  /** NULL = never expires. ISO timestamp string when set. */
+  license_expires_at: string | null;
 }
 
 export interface StudentRow {
@@ -20,6 +22,7 @@ export interface StudentRow {
 export interface TrainerInviteSummary {
   id: string;
   token: string;
+  url: string;
   created_at: string;
   expires_at: string;
 }
