@@ -65,10 +65,22 @@ function AccordionRoot(props: AccordionProps) {
     unstyled = false,
     className = '',
     children,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    value: _value,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    defaultValue: _defaultValue,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    onValueChange: _onValueChange,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    collapsible: _collapsible,
     ...rest
   } = props as AccordionProps & {
     type?: 'single' | 'multiple';
     className?: string;
+    value?: string | string[] | null;
+    defaultValue?: string | string[] | null;
+    onValueChange?: ((v: string | null) => void) | ((v: string[]) => void);
+    collapsible?: boolean;
   };
 
   // Normalise controlled / uncontrolled state for both modes.
