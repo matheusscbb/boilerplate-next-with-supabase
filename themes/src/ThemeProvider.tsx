@@ -247,8 +247,8 @@ export function ThemeProvider({
   );
 
   const toggleMode = useCallback(() => {
-    setMode(mode === 'light' ? 'dark' : mode === 'dark' ? 'system' : 'light');
-  }, [mode, setMode]);
+    setMode(resolvedMode === 'dark' ? 'light' : 'dark');
+  }, [resolvedMode, setMode]);
 
   const cssVars = useMemo(
     () => buildCssVarsString(lightTokens, darkTokens),
