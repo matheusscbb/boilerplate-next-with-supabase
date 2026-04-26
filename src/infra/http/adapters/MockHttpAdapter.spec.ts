@@ -4,8 +4,13 @@ import {
   vitest,
 } from 'vitest';
 
-import { isResponseError } from '../IHttpAdapter';
-import { FAKE_RESPONSES, MockHttpAdapter } from './MockHttpAdapter';
+import { isResponseError, type IResponseSuccess } from '../IHttpAdapter';
+import {
+  FAKE_RESPONSES,
+  type FakeAnyResponse,
+  type FakeRequestFunctionType,
+  MockHttpAdapter,
+} from './MockHttpAdapter';
 
 describe('MockHttpAdapter', () => {
   it('all methods', async () => {
@@ -146,7 +151,7 @@ describe('MockHttpAdapter', () => {
 
   it('mock functional responses', async () => {
     const adapter = new MockHttpAdapter({
-      '/foo/bar': vitest.fn<any>().mockReturnValue({
+      '/foo/bar': vitest.fn<FakeRequestFunctionType>().mockReturnValue({
         data: {
           status: 'success',
         },
@@ -169,9 +174,9 @@ describe('MockHttpAdapter', () => {
   });
 
   it('should cancel request', async () => {
-    let resolvePromise: any;
+    let resolvePromise: ((value: FakeAnyResponse) => void) | undefined;
     const adapter = new MockHttpAdapter({
-      '/success/200': () => new Promise(resolve => {
+      '/success/200': () => new Promise<FakeAnyResponse>(resolve => {
         resolvePromise = resolve;
       }),
     });
@@ -181,7 +186,7 @@ describe('MockHttpAdapter', () => {
 
     abortController.abort();
 
-    resolvePromise(FAKE_RESPONSES['/success/200']);
+    resolvePromise?.(FAKE_RESPONSES['/success/200'] as IResponseSuccess<unknown>);
 
     const response = await responsePromise;
 
@@ -195,9 +200,9 @@ describe('MockHttpAdapter', () => {
   });
 
   it('should ignore cancel if request was resolved', async () => {
-    let resolvePromise: any;
+    let resolvePromise: ((value: FakeAnyResponse) => void) | undefined;
     const adapter = new MockHttpAdapter({
-      '/success/200': () => new Promise(resolve => {
+      '/success/200': () => new Promise<FakeAnyResponse>(resolve => {
         resolvePromise = resolve;
       }),
     });
@@ -206,7 +211,7 @@ describe('MockHttpAdapter', () => {
     const responsePromise = adapter.get('/success/200', undefined, abortController);
 
     // Resolve a requisição antes de chamar o abort
-    resolvePromise(FAKE_RESPONSES['/success/200']);
+    resolvePromise?.(FAKE_RESPONSES['/success/200'] as IResponseSuccess<unknown>);
 
     await new Promise(resolve => {
       // Simula uma situação assíncrona para chamar o abort após a resolução da requisição ser chamada

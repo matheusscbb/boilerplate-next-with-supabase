@@ -30,7 +30,7 @@ class MockService extends HttpService<MockErrorType> {
   constructor(
     fakeResponses?: FakeResponsesType,
     errorHandler?: ErrorHandlerType<MockErrorType>,
-    responseInterceptor?: ResponseInterceptorType<any, any, MockErrorType>,
+    responseInterceptor?: ResponseInterceptorType<unknown, unknown, MockErrorType>,
   ) {
     super(new MockHttpAdapter(fakeResponses), errorHandler, responseInterceptor);
   }

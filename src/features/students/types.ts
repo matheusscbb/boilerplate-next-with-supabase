@@ -9,6 +9,15 @@ export interface StudentSummary {
   full_name: string | null;
   created_at: string;
   active_plan_name: string | null;
+  /** Snapshot of the most recent body assessment, when one exists. */
+  latest_assessment: StudentLatestAssessment | null;
+}
+
+export interface StudentLatestAssessment {
+  performed_on: string;
+  weight_kg: number | null;
+  body_fat_pct: number | null;
+  bmi: number | null;
 }
 
 /** Minimal plan info required by the assign-plan picker. */

@@ -95,6 +95,9 @@ export function AppHeader({ user, role }: AppHeaderProps) {
         <div className="mt-auto border-t border-border p-3">
           <div className="mb-2 flex items-center gap-3 rounded-lg px-3 py-2">
             {avatarUrl ? (
+              // Avatar comes from external providers (OAuth, Supabase storage)
+              // — see Header primitive for the full rationale.
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={avatarUrl}
                 alt={name || email}

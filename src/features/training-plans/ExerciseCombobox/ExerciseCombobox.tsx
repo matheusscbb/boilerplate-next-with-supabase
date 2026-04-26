@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useId, useState, useRef, useEffect, useCallback } from 'react';
 import { exerciseDatabase, EXERCISE_CATEGORIES } from '@/shared/constants';
 import type { Exercise } from '@/core/domain';
 import type { ExerciseComboboxProps } from './ExerciseCombobox.types';
@@ -14,6 +14,8 @@ export function ExerciseCombobox({
   placeholder = 'Buscar exercício…',
   disabled = false,
 }: ExerciseComboboxProps) {
+  // Stable id used to wire the combobox <input> to its listbox via aria-controls.
+  const listboxId = useId();
   const selected = value ? exerciseDatabase.find((e) => e.id === value) ?? null : null;
 
   const [query, setQuery] = useState('');
@@ -141,6 +143,7 @@ export function ExerciseCombobox({
           ref={inputRef}
           role="combobox"
           aria-expanded={open}
+          aria-controls={listboxId}
           aria-haspopup="listbox"
           aria-autocomplete="list"
           autoComplete="off"
@@ -180,6 +183,7 @@ export function ExerciseCombobox({
           ) : (
             <ul
               ref={listRef}
+              id={listboxId}
               role="listbox"
               aria-label="Exercícios"
               className="max-h-64 overflow-y-auto py-1"

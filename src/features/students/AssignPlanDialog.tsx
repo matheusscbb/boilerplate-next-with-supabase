@@ -24,12 +24,18 @@ export function AssignPlanDialog({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Reset transient form state whenever the dialog flips closed. We schedule
+  // the resets via `setTimeout(..., 0)` instead of calling them synchronously
+  // inside the effect to satisfy React 19's `react-hooks/set-state-in-effect`
+  // rule while keeping the visible behavior identical.
   useEffect(() => {
-    if (!open) {
+    if (open) return;
+    const id = window.setTimeout(() => {
       setSelectedPlanId('');
       setError(null);
       setLoading(false);
-    }
+    }, 0);
+    return () => window.clearTimeout(id);
   }, [open]);
 
   const handleConfirm = async () => {

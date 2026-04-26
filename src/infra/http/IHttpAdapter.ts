@@ -32,7 +32,7 @@ export interface IRequestOptions {
     [key: string]: string | number | boolean;
   };
   params?: {
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 
@@ -43,39 +43,49 @@ type InterceptorResultType = {
 export type HttpAdapterInterceptorsType =
 () => InterceptorResultType | undefined | Promise<InterceptorResultType | undefined>;
 
+/**
+ * Adapter-level errors only ever contain the platform-defined base codes.
+ * Service-specific codes are added later by `HttpService`, so we use
+ * `never` here as the "no extra codes" sentinel — keeping the result
+ * assignable to any `IResponseError<ErrorData, MyErrorType>`.
+ */
+export type AdapterResponse<SuccessData, ErrorData = SuccessData> =
+  | IResponseSuccess<SuccessData>
+  | IResponseError<ErrorData, never>;
+
 export interface IHttpAdapter {
 
   get<SuccessData, ErrorData = SuccessData>(
     url: string,
     options?: IRequestOptions,
     abortController?: AbortController,
-  ): Promise<IResponseSuccess<SuccessData> | IResponseError<ErrorData, any>>;
+  ): Promise<AdapterResponse<SuccessData, ErrorData>>;
 
-  post<SuccessData, ErrorData = SuccessData, RequestBody = any>(
+  post<SuccessData, ErrorData = SuccessData, RequestBody = unknown>(
     url: string,
     body?: RequestBody,
     options?: IRequestOptions,
     abortController?: AbortController,
-  ): Promise<IResponseSuccess<SuccessData> | IResponseError<ErrorData, any>>;
+  ): Promise<AdapterResponse<SuccessData, ErrorData>>;
 
-  put<SuccessData, ErrorData = SuccessData, RequestBody = any>(
+  put<SuccessData, ErrorData = SuccessData, RequestBody = unknown>(
     url: string,
     body?: RequestBody,
     options?: IRequestOptions,
     abortController?: AbortController,
-  ): Promise<IResponseSuccess<SuccessData> | IResponseError<ErrorData, any>>;
+  ): Promise<AdapterResponse<SuccessData, ErrorData>>;
 
-  patch<SuccessData, ErrorData = SuccessData, RequestBody = any>(
+  patch<SuccessData, ErrorData = SuccessData, RequestBody = unknown>(
     url: string,
     body?: RequestBody,
     options?: IRequestOptions,
     abortController?: AbortController,
-  ): Promise<IResponseSuccess<SuccessData> | IResponseError<ErrorData, any>>;
+  ): Promise<AdapterResponse<SuccessData, ErrorData>>;
 
   delete<SuccessData, ErrorData = SuccessData>(
     url: string,
     options?: IRequestOptions,
     abortController?: AbortController,
-  ): Promise<IResponseSuccess<SuccessData> | IResponseError<ErrorData, any>>;
+  ): Promise<AdapterResponse<SuccessData, ErrorData>>;
 
 }

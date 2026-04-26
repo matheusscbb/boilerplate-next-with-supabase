@@ -8,6 +8,8 @@ export { Input } from './primitives/Input';
 export type { InputProps } from './primitives/Input';
 export { Textarea } from './primitives/Textarea';
 export type { TextareaProps } from './primitives/Textarea';
+export { Field } from './primitives/Field';
+export type { FieldProps } from './primitives/Field';
 export { NumberStepper } from './primitives/NumberStepper';
 export type { NumberStepperProps } from './primitives/NumberStepper';
 export { Checkbox } from './primitives/Checkbox';

@@ -98,7 +98,6 @@ describe('AxiosHttpAdapter', () => {
 
   it('should prevent global axios', () => {
     expect(() => {
-      // eslint-disable-next-line no-new
       new AxiosHttpAdapter(Axios);
     }).toThrowError();
   });

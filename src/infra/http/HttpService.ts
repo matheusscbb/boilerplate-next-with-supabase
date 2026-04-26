@@ -7,7 +7,7 @@ import {
   isResponseError,
 } from './IHttpAdapter';
 
-export type ErrorHandlerType<ErrorType extends string, ResponseData = any> = (
+export type ErrorHandlerType<ErrorType extends string, ResponseData = unknown> = (
   response: IResponseError<ResponseData, ErrorType>
 ) => ErrorIdentifierType<ErrorType>;
 
@@ -25,14 +25,14 @@ export abstract class HttpService<ErrorType extends string = 'UNKNOWN'> {
 
   private readonly apiAdapter: IHttpAdapter;
 
-  private readonly errorHandler?: ErrorHandlerType<ErrorType, any>;
+  private readonly errorHandler?: ErrorHandlerType<ErrorType, unknown>;
 
-  private readonly responseInterceptor?: ResponseInterceptorType<any, any, ErrorType>;
+  private readonly responseInterceptor?: ResponseInterceptorType<unknown, unknown, ErrorType>;
 
   constructor(
     apiAdapter: IHttpAdapter,
-    errorHandler?: ErrorHandlerType<ErrorType, any>,
-    responseInterceptor?: ResponseInterceptorType<any, any, ErrorType>,
+    errorHandler?: ErrorHandlerType<ErrorType, unknown>,
+    responseInterceptor?: ResponseInterceptorType<unknown, unknown, ErrorType>,
   ) {
     this.apiAdapter = apiAdapter;
     this.errorHandler = errorHandler;
@@ -117,7 +117,7 @@ export abstract class HttpService<ErrorType extends string = 'UNKNOWN'> {
     );
   }
 
-  protected post<SuccessData, ErrorData = SuccessData, RequestBody = any>(
+  protected post<SuccessData, ErrorData = SuccessData, RequestBody = unknown>(
     url: string,
     body?: RequestBody,
     options?: IRequestOptions,
@@ -132,7 +132,7 @@ export abstract class HttpService<ErrorType extends string = 'UNKNOWN'> {
     );
   }
 
-  protected put<SuccessData, ErrorData = SuccessData, RequestBody = any>(
+  protected put<SuccessData, ErrorData = SuccessData, RequestBody = unknown>(
     url: string,
     body?: RequestBody,
     options?: IRequestOptions,
@@ -147,7 +147,7 @@ export abstract class HttpService<ErrorType extends string = 'UNKNOWN'> {
     );
   }
 
-  protected patch<SuccessData, ErrorData = SuccessData, RequestBody = any>(
+  protected patch<SuccessData, ErrorData = SuccessData, RequestBody = unknown>(
     url: string,
     body?: RequestBody,
     options?: IRequestOptions,

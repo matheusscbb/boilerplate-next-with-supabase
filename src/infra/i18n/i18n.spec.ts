@@ -20,6 +20,6 @@ describe('i18n', () => {
   });
 
   it('should', async () => {
-    expect(i18n.t('foo' as any, { ns: 'mockNs' as any })).toBe('bar');
+    expect(i18n.t('foo' as never, { ns: 'mockNs' as never })).toBe('bar');
   });
 });

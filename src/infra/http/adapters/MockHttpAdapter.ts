@@ -1,4 +1,5 @@
 import {
+  type AdapterResponse,
   type IHttpAdapter,
   type IRequestOptions,
   type IResponseError,
@@ -14,21 +15,21 @@ export type MockErrorDataType = {
   status: 'error';
 };
 
-type FakeResponseType =
-IResponseError<any, any> |
-IResponseSuccess<any> |
-Promise<IResponseError<any, any> |
-IResponseSuccess<any>>;
+export type FakeAnyResponse =
+  | IResponseSuccess<unknown>
+  | IResponseError<unknown, never>;
 
-type FakeRequestFunctionType = (
+export type FakeResponseType = FakeAnyResponse | Promise<FakeAnyResponse>;
+
+export type FakeRequestFunctionType = (
   method: MethodsType,
   url: string,
-  body?: any,
+  body?: unknown,
   options?: IRequestOptions,
 ) => FakeResponseType;
 
 export type FakeResponsesType = {
-  [key: string]: IResponseError<any, any> | IResponseSuccess<any> | FakeRequestFunctionType;
+  [key: string]: FakeAnyResponse | FakeRequestFunctionType;
 };
 
 export const FAKE_RESPONSES = {
@@ -90,16 +91,16 @@ export class MockHttpAdapter implements IHttpAdapter {
     this.fakeResponses = fakeResponses ?? FAKE_RESPONSES;
   }
 
-  private async executeRequest(
+  private async executeRequest<SuccessData, ErrorData>(
     method: MethodsType,
     url: string,
-    body?: any,
+    body?: unknown,
     options?: IRequestOptions,
     abortController?: AbortController,
-  ): Promise<IResponseError<any, any> | IResponseSuccess<any>> {
+  ): Promise<AdapterResponse<SuccessData, ErrorData>> {
     const request = this.fakeResponses[url] || Promise.resolve(FAKE_RESPONSES['/error/404']);
 
-    let response: IResponseError<any, any> | IResponseSuccess<any>;
+    let response: FakeAnyResponse;
 
     if (typeof request === 'function') {
       response = await this.executeWithAbortController(
@@ -110,7 +111,10 @@ export class MockHttpAdapter implements IHttpAdapter {
       response = request;
     }
 
-    return response;
+    // The fake registry uses untyped data; the public API is generic, so we
+    // assert at the boundary. Test code is responsible for shaping fakes
+    // that match the consumer's expected SuccessData/ErrorData.
+    return response as AdapterResponse<SuccessData, ErrorData>;
   }
 
   /**
@@ -119,17 +123,12 @@ export class MockHttpAdapter implements IHttpAdapter {
    *
    * Controla a corrida entre a execução da requisição e o cancelamento da mesma para
    * que impedir que a promise seja resolvida em duplicidade.
-   *
-   * @param responsePromise
-   * @param abortController
-   * @returns
    */
   private executeWithAbortController(
     responsePromise: FakeResponseType,
     abortController?: AbortController,
-  ): IResponseError<any, any> | IResponseSuccess<any> | PromiseLike<IResponseError<any, any> | IResponseSuccess<any>> {
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises, no-async-promise-executor
-    return new Promise(async resolve => {
+  ): Promise<FakeAnyResponse> {
+    return new Promise<FakeAnyResponse>((resolve) => {
       let resolved = false;
       abortController?.signal.addEventListener('abort', () => {
         if (resolved) return;
@@ -138,10 +137,11 @@ export class MockHttpAdapter implements IHttpAdapter {
           error: 'CANCELLED',
         });
       });
-      const res = await responsePromise;
-      if (resolved) return;
-      resolved = true;
-      resolve(res);
+      Promise.resolve(responsePromise).then((res) => {
+        if (resolved) return;
+        resolved = true;
+        resolve(res);
+      });
     });
   }
 
@@ -160,34 +160,34 @@ export class MockHttpAdapter implements IHttpAdapter {
     url: string,
     options?: IRequestOptions,
     abortController?: AbortController,
-  ): Promise<IResponseError<ErrorData, any> | IResponseSuccess<SuccessData>> {
+  ): Promise<AdapterResponse<SuccessData, ErrorData>> {
     return this.executeRequest('GET', url, undefined, options, abortController);
   }
 
-  async post<SuccessData = MockSuccessDataType, ErrorData = MockErrorDataType, RequestBody = any>(
+  async post<SuccessData = MockSuccessDataType, ErrorData = MockErrorDataType, RequestBody = unknown>(
     url: string,
     body?: RequestBody,
     options?: IRequestOptions,
     abortController?: AbortController,
-  ): Promise<IResponseError<ErrorData, any> | IResponseSuccess<SuccessData>> {
+  ): Promise<AdapterResponse<SuccessData, ErrorData>> {
     return this.executeRequest('POST', url, body, options, abortController);
   }
 
-  async put<SuccessData = MockSuccessDataType, ErrorData = MockErrorDataType, RequestBody = any>(
+  async put<SuccessData = MockSuccessDataType, ErrorData = MockErrorDataType, RequestBody = unknown>(
     url: string,
     body?: RequestBody,
     options?: IRequestOptions,
     abortController?: AbortController,
-  ): Promise<IResponseError<ErrorData, any> | IResponseSuccess<SuccessData>> {
+  ): Promise<AdapterResponse<SuccessData, ErrorData>> {
     return this.executeRequest('PUT', url, body, options, abortController);
   }
 
-  async patch<SuccessData = MockSuccessDataType, ErrorData = MockErrorDataType, RequestBody = any>(
+  async patch<SuccessData = MockSuccessDataType, ErrorData = MockErrorDataType, RequestBody = unknown>(
     url: string,
     body?: RequestBody,
     options?: IRequestOptions,
     abortController?: AbortController,
-  ): Promise<IResponseError<ErrorData, any> | IResponseSuccess<SuccessData>> {
+  ): Promise<AdapterResponse<SuccessData, ErrorData>> {
     return this.executeRequest('PATCH', url, body, options, abortController);
   }
 
@@ -195,7 +195,7 @@ export class MockHttpAdapter implements IHttpAdapter {
     url: string,
     options?: IRequestOptions,
     abortController?: AbortController,
-  ): Promise<IResponseError<ErrorData, any> | IResponseSuccess<SuccessData>> {
+  ): Promise<AdapterResponse<SuccessData, ErrorData>> {
     return this.executeRequest('DELETE', url, undefined, options, abortController);
   }
 

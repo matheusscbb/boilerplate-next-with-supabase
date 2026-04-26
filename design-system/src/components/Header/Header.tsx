@@ -335,6 +335,11 @@ function HeaderUserMenu({
         className="flex items-center gap-2 rounded-full p-1 pr-2.5 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       >
         {avatarUrl ? (
+          // Avatars come from arbitrary external URLs (OAuth providers,
+          // user uploads, etc.). Routing them through next/image would
+          // require listing every domain in next.config — using a plain
+          // <img> is the pragmatic choice for this design-system primitive.
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={avatarUrl}
             alt={displayName}

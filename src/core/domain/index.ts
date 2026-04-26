@@ -35,3 +35,13 @@ export type {
   WorkoutSessionFull,
   WorkoutSessionSummary,
 } from './workout-logs.types';
+export type {
+  AssessmentType,
+  SkinfoldProtocol,
+  AssessmentSex,
+  AssessmentPhotoPosition,
+  BodyAssessment,
+  BodyAssessmentPhoto,
+  BodyAssessmentFull,
+  BodyAssessmentSummary,
+} from './body-assessment.types';

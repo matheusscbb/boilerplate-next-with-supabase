@@ -6,11 +6,11 @@ import Axios, {
 import { warnDebugOnly } from '@/utils/debug';
 
 import {
+  type AdapterResponse,
   type HttpAdapterInterceptorsType,
   type IHttpAdapter,
   type IRequestOptions,
   type IResponseError,
-  type IResponseSuccess,
   type MethodsType,
 } from '../IHttpAdapter';
 
@@ -18,14 +18,16 @@ const isAxiosHeaders = (axiosHeaders: RawAxiosResponseHeaders | AxiosResponseHea
   typeof axiosHeaders.toJSON === 'function'
 );
 
-export const parseAxiosHeaders = (axiosHeaders?: RawAxiosResponseHeaders | AxiosResponseHeaders) => {
+export const parseAxiosHeaders = (
+  axiosHeaders?: RawAxiosResponseHeaders | AxiosResponseHeaders,
+): Record<string, unknown> => {
   if (!axiosHeaders) return {};
 
   if (isAxiosHeaders(axiosHeaders)) {
     return axiosHeaders.toJSON();
   }
 
-  return axiosHeaders as {};
+  return axiosHeaders as Record<string, unknown>;
 };
 
 type AxiosHttpAdapterOptionsType = {
@@ -58,9 +60,11 @@ export class AxiosHttpAdapter implements IHttpAdapter {
     }
   }
 
+  // axios catches throw `unknown`-shaped objects (could be Error, AxiosError,
+  // CanceledError, etc.). We narrow with the static type guards Axios ships.
   private handleAxiosError<ErrorData>(
-    error?: any,
-  ): IResponseError<ErrorData, any> {
+    error?: unknown,
+  ): IResponseError<ErrorData, never> {
     warnDebugOnly(error);
 
     if (Axios.isCancel(error)) {
@@ -74,7 +78,7 @@ export class AxiosHttpAdapter implements IHttpAdapter {
       return {
         data: error.response?.data,
         status: error.response?.status,
-        headers: parseAxiosHeaders(error.response?.headers),
+        headers: parseAxiosHeaders(error.response?.headers) as Record<string, string>,
         url: error.response?.config?.url,
         error: 'UNKNOWN',
       };
@@ -91,9 +95,9 @@ export class AxiosHttpAdapter implements IHttpAdapter {
     body?: RequestBody,
     options?: IRequestOptions,
     abortController?: AbortController,
-  ): Promise<IResponseError<ErrorData, any> | IResponseSuccess<SuccessData>> {
+  ): Promise<AdapterResponse<SuccessData, ErrorData>> {
     try {
-      const response = await this.axiosInstance.request({
+      const response = await this.axiosInstance.request<SuccessData>({
         url,
         method,
         data: body,
@@ -105,7 +109,7 @@ export class AxiosHttpAdapter implements IHttpAdapter {
       return {
         data: response.data,
         status: response.status,
-        headers: parseAxiosHeaders(response.headers),
+        headers: parseAxiosHeaders(response.headers) as Record<string, string>,
         url: response.config.url!,
       };
     } catch (error) {
@@ -117,34 +121,34 @@ export class AxiosHttpAdapter implements IHttpAdapter {
     url: string,
     options?: IRequestOptions,
     abortController?: AbortController,
-  ): Promise<IResponseError<ErrorData, any> | IResponseSuccess<SuccessData>> {
+  ): Promise<AdapterResponse<SuccessData, ErrorData>> {
     return this.executeRequest('GET', url, undefined, options, abortController);
   }
 
-  post<SuccessData, ErrorData = SuccessData, RequestBody = any>(
+  post<SuccessData, ErrorData = SuccessData, RequestBody = unknown>(
     url: string,
     body?: RequestBody,
     options?: IRequestOptions,
     abortController?: AbortController,
-  ): Promise<IResponseError<ErrorData, any> | IResponseSuccess<SuccessData>> {
+  ): Promise<AdapterResponse<SuccessData, ErrorData>> {
     return this.executeRequest('POST', url, body, options, abortController);
   }
 
-  put<SuccessData, ErrorData = SuccessData, RequestBody = any>(
+  put<SuccessData, ErrorData = SuccessData, RequestBody = unknown>(
     url: string,
     body?: RequestBody,
     options?: IRequestOptions,
     abortController?: AbortController,
-  ): Promise<IResponseError<ErrorData, any> | IResponseSuccess<SuccessData>> {
+  ): Promise<AdapterResponse<SuccessData, ErrorData>> {
     return this.executeRequest('PUT', url, body, options, abortController);
   }
 
-  patch<SuccessData, ErrorData = SuccessData, RequestBody = any>(
+  patch<SuccessData, ErrorData = SuccessData, RequestBody = unknown>(
     url: string,
     body?: RequestBody,
     options?: IRequestOptions,
     abortController?: AbortController,
-  ): Promise<IResponseError<ErrorData, any> | IResponseSuccess<SuccessData>> {
+  ): Promise<AdapterResponse<SuccessData, ErrorData>> {
     return this.executeRequest('PATCH', url, body, options, abortController);
   }
 
@@ -152,7 +156,7 @@ export class AxiosHttpAdapter implements IHttpAdapter {
     url: string,
     options?: IRequestOptions,
     abortController?: AbortController,
-  ): Promise<IResponseError<ErrorData, any> | IResponseSuccess<SuccessData>> {
+  ): Promise<AdapterResponse<SuccessData, ErrorData>> {
     return this.executeRequest('DELETE', url, undefined, options, abortController);
   }
 

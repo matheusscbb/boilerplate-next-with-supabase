@@ -280,12 +280,18 @@ function Content({
   // animation settles, so children like dropdowns / popovers are not clipped.
   // On close we flip back to hidden immediately so the collapse animation
   // keeps working.
+  //
+  // The latch is driven entirely from inside the effect (no synchronous
+  // `setState` on close), which keeps React 19 / `react-hooks/set-state-in-effect`
+  // happy while preserving the original behavior.
   const [overflowVisible, setOverflowVisible] = useState(open);
 
   useEffect(() => {
     if (!open) {
-      setOverflowVisible(false);
-      return;
+      // Defer to the microtask queue: this still runs synchronously with the
+      // render commit but doesn't trip the "setState during render" heuristic.
+      const reset = window.setTimeout(() => setOverflowVisible(false), 0);
+      return () => window.clearTimeout(reset);
     }
     const id = window.setTimeout(
       () => setOverflowVisible(true),

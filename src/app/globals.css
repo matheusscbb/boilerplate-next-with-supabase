@@ -88,3 +88,24 @@ body {
   color: var(--color-foreground);
   font-family: var(--font-sans);
 }
+
+/* Print: garante margens e cores fiéis quando o usuário "Salvar como PDF". */
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm 12mm;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}

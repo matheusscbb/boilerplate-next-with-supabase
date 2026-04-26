@@ -16,4 +16,9 @@ export {
   unassignPlan,
   type CreateInviteResult,
 } from './actions';
-export type { StudentSummary, AssignablePlan, CoachInviteSummary } from './types';
+export type {
+  StudentSummary,
+  StudentLatestAssessment,
+  AssignablePlan,
+  CoachInviteSummary,
+} from './types';

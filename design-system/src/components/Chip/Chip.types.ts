@@ -12,4 +12,4 @@ export interface ChipIconProps {
   className?: string;
 }
 
-export interface ChipRemoveProps extends ButtonHTMLAttributes<HTMLButtonElement> {}
+export type ChipRemoveProps = ButtonHTMLAttributes<HTMLButtonElement>;

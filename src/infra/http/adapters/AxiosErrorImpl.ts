@@ -1,6 +1,6 @@
 import { type AxiosError, type AxiosResponse, type InternalAxiosRequestConfig } from 'axios';
 
-export class AxiosErrorImpl<ResponseData = any, RequestData = any>
+export class AxiosErrorImpl<ResponseData = unknown, RequestData = unknown>
   extends Error
   implements AxiosError<ResponseData, RequestData> {
 
@@ -8,7 +8,7 @@ export class AxiosErrorImpl<ResponseData = any, RequestData = any>
 
   code?: string;
 
-  request?: any;
+  request?: unknown;
 
   response?: AxiosResponse<ResponseData, RequestData>;
 

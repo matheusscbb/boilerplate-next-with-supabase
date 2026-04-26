@@ -28,8 +28,10 @@ export default async function ProtectedLayout({
 
   return (
     <div className="flex min-h-screen flex-col">
-      <PendingCoachInviteRedeem />
-      <AppHeader user={user} role={role} />
+      <div className="print:hidden">
+        <PendingCoachInviteRedeem />
+        <AppHeader user={user} role={role} />
+      </div>
       <main className="flex-1">{children}</main>
     </div>
   );
