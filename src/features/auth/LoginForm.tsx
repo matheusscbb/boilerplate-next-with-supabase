@@ -3,12 +3,10 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/infra/supabase/client';
 import { SupabaseAuthRepository } from '@/infra/supabase/SupabaseAuthRepository';
 import { Button, Input, Card, Stack } from '@/design-system';
 
 const authRepo = new SupabaseAuthRepository();
-const PENDING_INVITE_KEY = 'pending_invite_token';
 
 export function LoginForm() {
   const [email, setEmail] = useState('');
@@ -30,26 +28,8 @@ export function LoginForm() {
       return;
     }
 
-    // Redeem a pending invite token (persisted on signup when email
-    // confirmation prevented immediate session creation).
-    if (typeof window !== 'undefined') {
-      const token = window.localStorage.getItem(PENDING_INVITE_KEY);
-      if (token) {
-        const supabase = createClient();
-        const { error: rpcError } = await supabase.rpc('accept_coach_invite', {
-          p_token: token,
-        });
-        if (rpcError) {
-          console.error('[LoginForm] pending invite RPC failed:', rpcError);
-          // Keep token so the user can retry after fixing the issue (e.g. new invite).
-        } else {
-          window.localStorage.removeItem(PENDING_INVITE_KEY);
-        }
-      }
-    }
-
     setLoading(false);
-    router.push('/dashboard');
+    router.push('/');
     router.refresh();
   };
 

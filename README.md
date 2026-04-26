@@ -2,11 +2,13 @@
 
 Boilerplate de produção com Next.js, Supabase, sistema de temas portátil e design system — pronto para deploy na Vercel.
 
+> Esta é a branch **`boilerplate`**: serve como base limpa para novos projetos. Mantenha-a atualizada com melhorias de infraestrutura, novos componentes do design system e correções gerais. Para iniciar um projeto novo, branch a partir desta (`git checkout -b project/<nome> boilerplate`).
+
 ## Stack
 
 - **Next.js 16** — App Router, Server Components, Server Actions
 - **TypeScript 5**
-- **Tailwind CSS v4**
+- **Tailwind CSS v4** (variant `dark` baseada em classe)
 - **Supabase** — Auth SSR com `@supabase/ssr`
 - **pnpm** — gerenciador de pacotes
 
@@ -17,32 +19,46 @@ Boilerplate de produção com Next.js, Supabase, sistema de temas portátil e de
 ```
 .
 ├── src/
-│   ├── app/                    # Next.js App Router (rotas, layout, globals.css)
+│   ├── app/                    # Next.js App Router
+│   │   ├── (auth)/             # Login, Register
+│   │   ├── layout.tsx          # Root layout + ThemeProvider script anti-flash
+│   │   ├── page.tsx            # Landing page
+│   │   └── globals.css         # @theme inline + cursor defaults + transições
 │   ├── core/
-│   │   ├── contracts/          # Interfaces (IAuthRepository, etc.)
-│   │   └── domain/             # Tipos e entidades base
-│   ├── features/               # Features por domínio (auth, dashboard, etc.)
-│   ├── providers/              # React Providers (ThemeProvider, SupabaseProvider)
+│   │   ├── contracts/          # IAuthRepository (interface)
+│   │   └── domain/             # Re-exports dos tipos User/Session do Supabase
+│   ├── features/
+│   │   └── auth/               # LoginForm, RegisterForm, LogoutButton
+│   ├── infra/
+│   │   ├── supabase/
+│   │   │   ├── client.ts                 # createBrowserClient
+│   │   │   ├── server.ts                 # createServerClient (SSR)
+│   │   │   ├── middleware.ts             # updateSession + redirect login
+│   │   │   └── SupabaseAuthRepository.ts # Implementação concreta de IAuthRepository
+│   │   ├── http/               # HttpService + adapters (axios, mock)
+│   │   ├── i18n/               # getTranslation
+│   │   └── context/            # createContextFactory
+│   ├── providers/              # ThemeProvider + SupabaseProvider
 │   ├── shared/
 │   │   ├── hooks/              # useUser, useSupabaseClient
-│   │   ├── utils/              # cn() e utilitários gerais
+│   │   ├── utils/              # cn() e utilitários
 │   │   └── constants/
-│   └── lib/
-│       └── supabase/
-│           ├── client.ts       # createBrowserClient — Client Components
-│           ├── server.ts       # createServerClient — Server Components / Actions
-│           └── middleware.ts   # updateSession — refresh de tokens
-├── themes/                     # Sistema de tema portátil e independente
+│   └── hooks/                  # Hooks utilitários (useDidMountAndUpdate)
+├── themes/                     # Sistema de tema portátil
 │   └── src/
-│       ├── tokens/types.ts     # Interfaces ThemeTokens, ColorPalette, TypographyScale
-│       ├── presets/default.ts  # Preset padrão (única fonte de verdade dos tokens)
-│       └── ThemeProvider.tsx   # Injeta tokens como CSS vars no :root via <style>
-├── design-system/              # Componentes base que consomem o tema
+│       ├── tokens/types.ts     # ThemeTokens, ColorPalette, TypographyScale
+│       ├── presets/default.ts  # Preset light (única fonte de verdade)
+│       ├── presets/dark.ts     # Preset dark
+│       └── ThemeProvider.tsx   # Injeta tokens como CSS vars no :root
+├── design-system/              # Componentes que consomem o tema
 │   └── src/
-│       ├── primitives/         # Button, Input, Checkbox
-│       ├── components/         # Card, Accordion, List, Table
+│       ├── primitives/         # Button, Input, Checkbox, Field, Switch,
+│       │                       # Textarea, Select, Badge, NumberStepper
+│       ├── components/         # Card, Accordion, List, Table, Tabs,
+│       │                       # Dialog, Calendar, Chip, Header, ThemeToggle
 │       └── layout/             # Stack
-├── middleware.ts               # Next.js middleware — refresh de sessão Supabase
+├── supabase/migrations/        # (vazio) adicionar migrations do projeto
+├── middleware.ts               # Next.js middleware que delega para infra/supabase
 └── .env.example
 ```
 
@@ -90,7 +106,7 @@ pnpm start
 
 1. Conecte o repositório à Vercel
 2. Adicione as variáveis de ambiente (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`)
-3. Deploy automático a cada push na `main`
+3. Deploy automático a cada push
 
 ---
 
@@ -98,7 +114,7 @@ pnpm start
 
 A pasta `themes/` é independente e pode ser extraída como pacote npm ou workspace.
 
-O arquivo `themes/src/presets/default.ts` é a **única fonte de verdade** para os tokens. O `ThemeProvider` injeta os valores como CSS variables no `:root` via `<style>` tag — funciona no SSR sem flash.
+O arquivo `themes/src/presets/default.ts` é a **única fonte de verdade** dos tokens light. O `ThemeProvider` injeta `:root { ... }` e `.dark { ... }` como CSS variables via `<style>`. O script inline em `src/app/layout.tsx` aplica a classe `dark` antes da hidratação para evitar flash.
 
 ### Estrutura dos tokens
 
@@ -119,7 +135,6 @@ O arquivo `themes/src/presets/default.ts` é a **única fonte de verdade** para 
 ### Customizar por cliente
 
 ```tsx
-// Sobrescrever tokens específicos — o restante herda do preset padrão
 <ThemeProvider config={{
   overrides: {
     colors: {
@@ -136,23 +151,46 @@ O arquivo `themes/src/presets/default.ts` é a **única fonte de verdade** para 
 
 ## Design System
 
-Componentes base em `design-system/src/` que consomem os tokens do tema via CSS variables.
+Componentes em `design-system/src/` que consomem os tokens via CSS variables.
 
-| Componente | Variants / Props |
-|-----------|-----------------|
+### Primitives
+
+| Componente | Notas |
+|-----------|-------|
 | `Button` | `primary`, `secondary`, `ghost`, `danger` · `sm`, `md`, `lg` · `isLoading`, `fullWidth` |
 | `Input` | `error` |
 | `Checkbox` | `label`, `error` · `sm`, `md`, `lg` |
+| `Textarea` | `error`, `rows` |
+| `Select` | Wrapper acessível em volta de `<select>` nativo |
+| `Switch` | Toggle ARIA |
+| `Field` | Wrapper com label + error |
+| `Badge` | Indicador estático |
+| `NumberStepper` | Input numérico com botões `+`/`-` |
+
+### Components
+
+| Componente | Notas |
+|-----------|-------|
 | `Card` | Compound: `Card.Header`, `Card.Content`, `Card.Footer` |
 | `Accordion` | Compound: `Accordion.Item` · `title`, `defaultOpen` |
-| `List` | Compound: `List.Item` · `variant` (unordered/ordered/none) |
+| `List` | Compound: `List.Item` · variantes unordered/ordered/none |
 | `Table` | Compound: `Table.Head`, `Table.Body`, `Table.Row`, `Table.Header`, `Table.Cell` |
+| `Tabs` | Compound: `Tabs.List`, `Tabs.Trigger`, `Tabs.Content` |
+| `Dialog` | Modal acessível com `Dialog.Trigger`, `Dialog.Content` |
+| `Calendar` | Calendário mês a mês com seleção e marcadores |
+| `Chip` | Tag/etiqueta clicável |
+| `Header` | Cabeçalho composto com slots |
+| `ThemeToggle` | Botão com modo light/dark/system |
+
+### Layout
+
+| Componente | Notas |
+|-----------|-------|
 | `Stack` | `direction` (vertical/horizontal) · `gap` (sm/md/lg) |
 
 ```tsx
 import { Button, Input, Card, Stack } from '@/design-system';
 
-// Card usa padrão compound — sem imports adicionais
 <Card>
   <Card.Header>Título</Card.Header>
   <Card.Content>Conteúdo principal</Card.Content>
@@ -176,9 +214,29 @@ import { Button, Input, Card, Stack } from '@/design-system';
 
 ---
 
-## Rotas
+## Rotas incluídas
 
 | Rota | Descrição |
 |------|-----------|
-| `/` | Página inicial |
+| `/` | Landing page |
 | `/login` | Formulário de login |
+| `/register` | Formulário de cadastro (nome + email + senha) |
+
+O middleware redireciona usuários autenticados para fora de `/login` e `/register`, e usuários não autenticados para `/login` quando tentam acessar rotas protegidas.
+
+---
+
+## Workflow
+
+```bash
+# Iniciar um novo projeto a partir do boilerplate
+git checkout boilerplate
+git pull
+git checkout -b project/<nome>
+
+# Atualizar o boilerplate com melhorias gerais
+git checkout boilerplate
+# faça as melhorias
+git commit -m "feat: ..."
+git push
+```

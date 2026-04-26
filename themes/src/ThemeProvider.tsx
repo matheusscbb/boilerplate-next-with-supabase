@@ -210,6 +210,9 @@ export function ThemeProvider({
         // localStorage might be unavailable (private mode, SSR-like envs)
       }
     }
+    // Intentional: hydrate state from an external source (localStorage) on first
+    // client render. The cascading update is desired here.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setModeState(initial);
     const resolved = resolveMode(initial);
     setResolvedMode(resolved);

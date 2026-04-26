@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Saitama",
-  description: "Base project with Next.js and Supabase",
+  title: "Boilerplate Next + Supabase",
+  description: "Boilerplate Next.js + Supabase + Theme System + Design System",
 };
 
 // Runs before React hydrates: applies the persisted theme class on <html>

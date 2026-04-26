@@ -2,26 +2,13 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { createClient } from '@/infra/supabase/client';
+import { useRouter } from 'next/navigation';
 import { SupabaseAuthRepository } from '@/infra/supabase/SupabaseAuthRepository';
 import { Button, Input, Card, Stack } from '@/design-system';
 
 const authRepo = new SupabaseAuthRepository();
 
-export interface RegisterFormProps {
-  /**
-   * When present, the form forces role=student and runs accept_coach_invite
-   * right after signup so the new student is linked to the coach.
-   */
-  inviteToken?: string;
-  /**
-   * When present, the form forces role=trainer and runs consume_trainer_invite
-   * right after signup so the new trainer account is properly set up.
-   */
-  trainerInviteToken?: string;
-}
-
-export function RegisterForm({ inviteToken, trainerInviteToken }: RegisterFormProps) {
+export function RegisterForm() {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -29,12 +16,7 @@ export function RegisterForm({ inviteToken, trainerInviteToken }: RegisterFormPr
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  const isTrainerInvite = Boolean(trainerInviteToken);
-  const isCoachInvite = Boolean(inviteToken);
-  const hasInvite = isTrainerInvite || isCoachInvite;
-
-  const effectiveRole = isTrainerInvite ? 'trainer' : 'student';
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,16 +32,11 @@ export function RegisterForm({ inviteToken, trainerInviteToken }: RegisterFormPr
       return;
     }
 
-    if (password.length < 6) {
-      setError('A senha deve ter no mínimo 6 caracteres.');
-      return;
-    }
-
     setLoading(true);
 
     const { error: signUpError, session } = await authRepo.signUp(
       { email, password },
-      { role: effectiveRole, fullName: fullName.trim() }
+      { fullName: fullName.trim() }
     );
 
     if (signUpError) {
@@ -68,63 +45,37 @@ export function RegisterForm({ inviteToken, trainerInviteToken }: RegisterFormPr
       return;
     }
 
-    const supabase = createClient();
-
-    if (isTrainerInvite && trainerInviteToken) {
-      if (session?.user) {
-        const { error: rpcError } = await supabase.rpc('consume_trainer_invite', {
-          p_token: trainerInviteToken,
-        });
-        if (rpcError) {
-          console.error('[RegisterForm] trainer invite consumption failed:', rpcError);
-          if (typeof window !== 'undefined') {
-            window.localStorage.setItem('pending_trainer_invite_token', trainerInviteToken);
-          }
-        }
-      } else if (typeof window !== 'undefined') {
-        window.localStorage.setItem('pending_trainer_invite_token', trainerInviteToken);
-      }
-    }
-
-    if (isCoachInvite && inviteToken) {
-      if (session?.user) {
-        const { error: rpcError } = await supabase.rpc('accept_coach_invite', {
-          p_token: inviteToken,
-        });
-        if (rpcError) {
-          console.error('[RegisterForm] coach invite acceptance failed:', rpcError);
-          if (typeof window !== 'undefined') {
-            window.localStorage.setItem('pending_invite_token', inviteToken);
-          }
-        }
-      } else if (typeof window !== 'undefined') {
-        window.localStorage.setItem('pending_invite_token', inviteToken);
-      }
-    }
-
     setLoading(false);
-    setSuccess(true);
+
+    // Quando a confirmação por email está habilitada o Supabase devolve
+    // session=null; pedimos ao usuário para confirmar antes de seguir.
+    if (!session) {
+      setSuccess(true);
+      return;
+    }
+
+    router.push('/');
+    router.refresh();
   };
 
   if (success) {
     return (
       <Card>
+        <Card.Header>Conta criada</Card.Header>
         <Card.Content>
-          <Stack gap="md">
-            <div className="text-center">
-              <p className="text-lg font-semibold text-foreground">Conta criada!</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Verifique seu e-mail para confirmar o cadastro antes de fazer login.
-              </p>
-            </div>
-            <Link
-              href="/login"
-              className="inline-flex w-full items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
-            >
-              Ir para o login
-            </Link>
-          </Stack>
+          <p className="text-sm text-muted-foreground">
+            Enviamos um email de confirmação para <strong>{email}</strong>. Confirme
+            seu email e em seguida faça login.
+          </p>
         </Card.Content>
+        <Card.Footer>
+          <Link
+            href="/login"
+            className="inline-flex w-full items-center justify-center rounded-md bg-primary px-4 py-2 font-medium text-white transition-opacity hover:opacity-90"
+          >
+            Ir para o login
+          </Link>
+        </Card.Footer>
       </Card>
     );
   }
@@ -132,37 +83,22 @@ export function RegisterForm({ inviteToken, trainerInviteToken }: RegisterFormPr
   return (
     <Card>
       <form onSubmit={handleSubmit}>
-        <Card.Header>
-          {isTrainerInvite
-            ? 'Cadastro de Treinador'
-            : isCoachInvite
-              ? 'Aceitar convite do coach'
-              : 'Criar conta'}
-        </Card.Header>
+        <Card.Header>Criar conta</Card.Header>
         <Card.Content>
           <Stack gap="md">
-            {hasInvite && (
-              <p className="rounded-md border border-border bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
-                {isTrainerInvite
-                  ? 'Você foi convidado como treinador. Ao finalizar o cadastro, sua conta terá acesso às funcionalidades de treinador.'
-                  : 'Você foi convidado por um coach. Ao finalizar o cadastro, sua conta será vinculada automaticamente.'}
-              </p>
-            )}
-
             <div>
               <label htmlFor="fullName" className="mb-2 block text-sm font-medium text-foreground">
-                Nome completo <span className="text-destructive">*</span>
+                Nome
               </label>
               <Input
                 id="fullName"
                 type="text"
-                placeholder="Seu nome completo"
+                placeholder="Seu nome"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 required
               />
             </div>
-
             <div>
               <label htmlFor="email" className="mb-2 block text-sm font-medium text-foreground">
                 Email
@@ -183,9 +119,9 @@ export function RegisterForm({ inviteToken, trainerInviteToken }: RegisterFormPr
               <Input
                 id="password"
                 type="password"
-                placeholder="Mínimo 6 caracteres"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                minLength={6}
                 required
               />
             </div>
@@ -196,9 +132,9 @@ export function RegisterForm({ inviteToken, trainerInviteToken }: RegisterFormPr
               <Input
                 id="confirmPassword"
                 type="password"
-                placeholder="Repita a senha"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                minLength={6}
                 required
               />
             </div>

@@ -1,5 +1,4 @@
 import type { Session, User } from '@supabase/supabase-js';
-import type { UserRole } from '@/core/domain';
 
 export interface AuthCredentials {
   email: string;
@@ -7,9 +6,6 @@ export interface AuthCredentials {
 }
 
 export interface SignUpOptions {
-  /** Initial profile role stamped into auth user_metadata. */
-  role?: UserRole;
-  /** Optional display name, also persisted in user_metadata. */
   fullName?: string;
 }
 

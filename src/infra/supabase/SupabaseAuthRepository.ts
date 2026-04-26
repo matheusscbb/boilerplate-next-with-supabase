@@ -24,16 +24,12 @@ export class SupabaseAuthRepository implements IAuthRepository {
     { email, password }: AuthCredentials,
     options?: SignUpOptions
   ) {
-    // role/full_name live in user_metadata so the handle_new_user trigger
-    // can stamp them onto the freshly created profiles row.
-    const metadata: Record<string, string> = {};
-    if (options?.role) metadata.role = options.role;
-    if (options?.fullName) metadata.full_name = options.fullName;
+    const metadata = options?.fullName ? { full_name: options.fullName } : undefined;
 
     const { data, error } = await this.client.auth.signUp({
       email,
       password,
-      options: Object.keys(metadata).length ? { data: metadata } : undefined,
+      options: metadata ? { data: metadata } : undefined,
     });
     return { error: error ?? null, session: data.session ?? null };
   }

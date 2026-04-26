@@ -83,7 +83,12 @@ const ORDER: ThemeMode[] = ['light', 'dark', 'system'];
 // Avoid icon mismatches between SSR (no class) and CSR (after hydration).
 function useMounted() {
   const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    // Intentional: flip a one-shot flag after hydration so SSR and CSR
+    // can render different UI without React complaining about mismatch.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+  }, []);
   return mounted;
 }
 
