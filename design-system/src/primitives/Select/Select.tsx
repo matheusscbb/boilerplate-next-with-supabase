@@ -9,7 +9,7 @@ export function Select({ ref, error, className = '', children, ...props }: Selec
         ref={ref}
         className={[
           'block w-full appearance-none rounded-md border bg-background',
-          'px-3 py-2 pr-8 text-sm text-foreground',
+          'px-3 py-2 pr-8 text-sm text-foreground cursor-pointer',
           'focus:outline-none focus:ring-2 focus:ring-offset-2',
           'disabled:cursor-not-allowed disabled:opacity-50',
           error

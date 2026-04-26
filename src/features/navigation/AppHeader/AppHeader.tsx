@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { Header } from '@/design-system';
+import { Header, ThemeToggle } from '@/design-system';
 import { SupabaseAuthRepository } from '@/infra/supabase/SupabaseAuthRepository';
 import { getNavItems } from './config';
 import { LogOutIcon, UserIcon } from './icons';
@@ -58,6 +58,8 @@ export function AppHeader({ user, role }: AppHeaderProps) {
 
       {/* Right-side actions */}
       <Header.Actions>
+        <ThemeToggle />
+
         <Header.UserMenu name={name} email={email} avatarUrl={avatarUrl}>
           <Header.UserMenuItem href="/perfil">
             <UserIcon />
@@ -93,6 +95,13 @@ export function AppHeader({ user, role }: AppHeaderProps) {
 
         {/* User section — bottom of drawer */}
         <div className="mt-auto border-t border-border p-3">
+          <div className="mb-3">
+            <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Tema
+            </p>
+            <ThemeToggle variant="segmented" size="sm" className="w-full" />
+          </div>
+
           <div className="mb-2 flex items-center gap-3 rounded-lg px-3 py-2">
             {avatarUrl ? (
               // Avatar comes from external providers (OAuth, Supabase storage)
@@ -125,7 +134,7 @@ export function AppHeader({ user, role }: AppHeaderProps) {
               type="button"
               onClick={handleLogout}
               disabled={loggingOut}
-              className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-50"
+              className="flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <LogOutIcon />
               {loggingOut ? 'Saindo…' : 'Sair'}

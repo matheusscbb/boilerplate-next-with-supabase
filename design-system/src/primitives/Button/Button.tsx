@@ -34,7 +34,7 @@ export function Button({
       ref={ref}
       disabled={disabled ?? isLoading}
       className={[
-        'inline-flex items-center justify-center font-medium transition-opacity disabled:opacity-50 disabled:cursor-not-allowed',
+        'inline-flex items-center justify-center font-medium transition-opacity cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed',
         variantStyles[variant],
         sizeStyles[size],
         fullWidth && 'w-full',

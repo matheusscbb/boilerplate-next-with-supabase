@@ -88,7 +88,7 @@ function HeaderLogo({ children, href = '/', className = '' }: HeaderLogoProps) {
     <Link
       href={href}
       className={[
-        'flex shrink-0 items-center gap-2 text-lg font-bold text-foreground transition-opacity hover:opacity-80',
+        'flex shrink-0 cursor-pointer items-center gap-2 text-lg font-bold text-foreground transition-opacity hover:opacity-80',
         className,
       ]
         .filter(Boolean)
@@ -125,7 +125,7 @@ function HeaderNavItem({ children, href, active = false, className = '' }: Heade
       href={href}
       aria-current={active ? 'page' : undefined}
       className={[
-        'relative flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150',
+        'relative flex cursor-pointer items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150',
         active
           ? 'text-primary bg-primary/10'
           : 'text-foreground-secondary hover:text-foreground hover:bg-muted',
@@ -167,7 +167,7 @@ function HeaderMobileToggle({ className = '' }: { className?: string }) {
       aria-controls="header-mobile-menu"
       onClick={() => setIsOpen(!isOpen)}
       className={[
-        'flex lg:hidden h-9 w-9 items-center justify-center rounded-md transition-colors',
+        'flex lg:hidden h-9 w-9 cursor-pointer items-center justify-center rounded-md transition-colors',
         'text-foreground-secondary hover:bg-muted hover:text-foreground',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
         className,
@@ -224,7 +224,7 @@ function HeaderMobileMenu({ children, className = '' }: HeaderMobileMenuProps) {
           type="button"
           aria-label="Fechar menu"
           onClick={() => setIsOpen(false)}
-          className="flex h-8 w-8 items-center justify-center rounded-md text-foreground-secondary transition-colors hover:bg-muted hover:text-foreground"
+          className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-foreground-secondary transition-colors hover:bg-muted hover:text-foreground"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -269,7 +269,7 @@ function HeaderMobileNavItem({ children, href, active = false, className = '' }:
       aria-current={active ? 'page' : undefined}
       onClick={() => setIsOpen(false)}
       className={[
-        'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+        'flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
         active
           ? 'bg-primary/10 text-primary'
           : 'text-foreground-secondary hover:bg-muted hover:text-foreground',
@@ -332,7 +332,7 @@ function HeaderUserMenu({
         aria-expanded={open}
         aria-haspopup="true"
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-2 rounded-full p-1 pr-2.5 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        className="flex cursor-pointer items-center gap-2 rounded-full p-1 pr-2.5 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       >
         {avatarUrl ? (
           // Avatars come from arbitrary external URLs (OAuth providers,
@@ -405,7 +405,7 @@ function HeaderUserMenuItem({
   className = '',
 }: HeaderUserMenuItemProps) {
   const baseClass = [
-    'flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-left transition-colors',
+    'flex w-full cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm text-left transition-colors',
     danger ? 'text-destructive hover:bg-destructive/10' : 'text-foreground hover:bg-muted',
     className,
   ]

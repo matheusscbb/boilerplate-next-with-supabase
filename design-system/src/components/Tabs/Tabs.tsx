@@ -64,7 +64,7 @@ function TabsTrigger({ value, children, disabled, className = '' }: TabsTriggerP
       disabled={disabled}
       onClick={() => onChange(value)}
       className={[
-        'inline-flex items-center justify-center rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+        'inline-flex items-center justify-center rounded-md px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer',
         'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1',
         'disabled:opacity-50 disabled:cursor-not-allowed',
         selected

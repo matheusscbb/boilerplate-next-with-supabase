@@ -76,7 +76,7 @@ export function NumberStepper({
         onClick={() => commitDelta(-step)}
         disabled={disabled || readOnly || (typeof min === 'number' && (value ?? min) <= min)}
         className={[
-          'flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed',
+          'flex items-center justify-center text-muted-foreground cursor-pointer hover:bg-muted hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed',
           s.btn,
         ].join(' ')}
         tabIndex={-1}
@@ -130,7 +130,7 @@ export function NumberStepper({
         onClick={() => commitDelta(step)}
         disabled={disabled || readOnly || (typeof max === 'number' && (value ?? 0) >= max)}
         className={[
-          'flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed',
+          'flex items-center justify-center text-muted-foreground cursor-pointer hover:bg-muted hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed',
           s.btn,
         ].join(' ')}
         tabIndex={-1}

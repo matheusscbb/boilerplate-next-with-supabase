@@ -61,7 +61,12 @@ function DialogRoot({
       <div
         aria-hidden="true"
         onClick={closeOnOverlayClick ? () => onOpenChange(false) : undefined}
-        className="absolute inset-0 bg-black/50"
+        className={[
+          'absolute inset-0 bg-black/50',
+          closeOnOverlayClick ? 'cursor-pointer' : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
       />
       <div
         ref={contentRef}

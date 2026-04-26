@@ -61,6 +61,12 @@ export type {
 export { Stack } from './layout/Stack';
 export type { StackProps } from './layout/Stack';
 export { useThemeTokens } from './theme-adapter/useThemeTokens';
+export { ThemeToggle } from './components/ThemeToggle';
+export type {
+  ThemeToggleProps,
+  ThemeToggleVariant,
+  ThemeToggleSize,
+} from './components/ThemeToggle';
 export { Header } from './components/Header';
 export type {
   HeaderProps,

@@ -31,7 +31,7 @@ export function Checkbox({ ref, label, error, size = 'md', className = '', id, .
           id={id}
           type="checkbox"
           className={[
-            'rounded border border-border bg-transparent text-primary',
+            'rounded border border-border bg-transparent text-primary cursor-pointer',
             'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
             'disabled:cursor-not-allowed',
             error && 'border-destructive focus:ring-destructive',

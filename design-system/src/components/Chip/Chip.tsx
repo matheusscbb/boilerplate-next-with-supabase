@@ -80,10 +80,10 @@ function ChipRemove({ className = '', disabled: disabledProp, ...props }: ChipRe
       disabled={isDisabled}
       tabIndex={isDisabled ? -1 : undefined}
       className={[
-        'inline-flex shrink-0 items-center justify-center rounded-full size-4 -mr-0.5',
+        'inline-flex shrink-0 cursor-pointer items-center justify-center rounded-full size-4 -mr-0.5',
         'hover:bg-black/10 dark:hover:bg-white/10',
         'focus:outline-none focus:ring-1 focus:ring-ring',
-        'disabled:pointer-events-none',
+        'disabled:pointer-events-none disabled:cursor-not-allowed',
         className,
       ]
         .filter(Boolean)

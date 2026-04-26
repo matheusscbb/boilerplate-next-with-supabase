@@ -1,10 +1,23 @@
 @import "tailwindcss";
 
 /*
- * CSS vars são injetados no :root pelo ThemeProvider via <style> tag.
- * O default.ts é a única fonte de verdade para os valores do tema.
- * Aqui apenas: registros para o Tailwind (@theme inline), dark mode e estilos globais.
+ * Theme tokens (CSS custom properties) are injected by the ThemeProvider
+ * into a <style> tag. The provider emits two layers:
+ *   :root { ...light vars }
+ *   .dark { ...dark vars }
+ * The active layer is selected by toggling the `dark` class on <html>.
+ *
+ * The single source of truth for token *values* lives in
+ * themes/src/presets/{default,dark}.ts.
  */
+
+/*
+ * Switch Tailwind's `dark:` variant from the default media query strategy
+ * to a class-based strategy. This lets the user (and not the OS) pick the
+ * theme, and keeps `dark:` utilities in app code in sync with the token
+ * layer flipped by ThemeProvider.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme inline {
   /* Brand */
@@ -68,25 +81,60 @@
   --line-height-relaxed: var(--line-height-relaxed);
 }
 
-/* Dark mode — sobrescreve apenas as vars que mudam no dark */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-background: #0a0a0a;
-    --color-background-secondary: #1e293b;
-    --color-foreground: #f8fafc;
-    --color-foreground-secondary: #94a3b8;
-    --color-text-main: #f8fafc;
-    --color-text-secondary: #94a3b8;
-    --color-border: #334155;
-    --color-muted: #1e293b;
-    --color-muted-foreground: #94a3b8;
-  }
-}
-
 body {
   background: var(--color-background);
   color: var(--color-foreground);
   font-family: var(--font-sans);
+}
+
+/*
+ * Cursor defaults for interactive elements.
+ *
+ * Tailwind v4's preflight no longer forces `cursor: pointer` on buttons
+ * (the spec default is `cursor: default`). We re-establish the expected UX:
+ * any element that *does* something on click gets the pointer cursor,
+ * and disabled controls explicitly show "not-allowed".
+ *
+ * Components in the design-system also set these classes inline so the
+ * styling is discoverable in code; this layer is the safety-net for raw
+ * elements at the app level.
+ */
+button:not(:disabled):not([aria-disabled="true"]),
+[role="button"]:not([aria-disabled="true"]),
+[role="tab"]:not([aria-disabled="true"]),
+[role="switch"]:not([aria-disabled="true"]),
+[role="menuitem"]:not([aria-disabled="true"]),
+[role="radio"]:not([aria-disabled="true"]),
+[role="option"]:not([aria-disabled="true"]),
+summary,
+label[for]:not(:has(input:disabled)),
+a[href] {
+  cursor: pointer;
+}
+
+button:disabled,
+button[aria-disabled="true"],
+[role="button"][aria-disabled="true"],
+[role="tab"][aria-disabled="true"],
+[role="switch"][aria-disabled="true"],
+input:disabled,
+select:disabled,
+textarea:disabled {
+  cursor: not-allowed;
+}
+
+/* Smooth color transition when the user flips the theme.
+   Excludes box-shadow and transform so component animations stay snappy. */
+html.theme-transition,
+html.theme-transition *,
+html.theme-transition *::before,
+html.theme-transition *::after {
+  transition:
+    background-color 200ms ease,
+    border-color 200ms ease,
+    color 200ms ease,
+    fill 200ms ease,
+    stroke 200ms ease !important;
 }
 
 /* Print: garante margens e cores fiéis quando o usuário "Salvar como PDF". */

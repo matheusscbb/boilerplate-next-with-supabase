@@ -18,13 +18,33 @@ export const metadata: Metadata = {
   description: "Base project with Next.js and Supabase",
 };
 
+// Runs before React hydrates: applies the persisted theme class on <html>
+// so the user never sees a flash of the wrong theme.
+const themeInitScript = `
+(function () {
+  try {
+    var key = 'theme';
+    var stored = window.localStorage.getItem(key);
+    var mode = (stored === 'light' || stored === 'dark' || stored === 'system') ? stored : 'system';
+    var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var resolved = mode === 'system' ? (prefersDark ? 'dark' : 'light') : mode;
+    var root = document.documentElement;
+    if (resolved === 'dark') root.classList.add('dark');
+    root.style.colorScheme = resolved;
+  } catch (_) {}
+})();
+`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

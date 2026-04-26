@@ -64,7 +64,7 @@ const DayCell = memo(function DayCell({
       aria-label={iso}
       aria-pressed={isSelected}
       className={[
-        'relative flex aspect-square flex-col items-center justify-center rounded-md text-sm transition-colors',
+        'relative flex aspect-square flex-col items-center justify-center rounded-md text-sm transition-colors cursor-pointer',
         'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1',
         !inCurrentMonth && 'text-muted-foreground/50',
         inCurrentMonth && !isSelected && 'text-foreground hover:bg-muted',
@@ -186,7 +186,7 @@ function CalendarRoot({
           type="button"
           onClick={handlePrev}
           aria-label="Mês anterior"
-          className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
         >
           ‹
         </button>
@@ -195,7 +195,7 @@ function CalendarRoot({
           <button
             type="button"
             onClick={handleToday}
-            className="rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+            className="cursor-pointer rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
           >
             Hoje
           </button>
@@ -204,7 +204,7 @@ function CalendarRoot({
           type="button"
           onClick={handleNext}
           aria-label="Próximo mês"
-          className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
         >
           ›
         </button>
